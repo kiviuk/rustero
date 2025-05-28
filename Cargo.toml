@@ -1,0 +1,19 @@
+[package]
+name = "rustero"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+rss = "2.0"           # For RSS feed parsing
+ratatui = "0.25.0"
+crossterm = "0.27.0"
+anyhow = "1.0.79"
+serde = { version = "1.0.219", features = ["derive"] }       # For serialization
+chrono = { version = "0.4.41", features = ["serde"] }       # For datetime handling
+reqwest = { version = "0.11", features = ["blocking"] }  # For HTTP requests
+async-trait = "0.1"
+tokio = { version = "1.0", features = ["full"] }
+thiserror = "2.0.12"
+
+
+
