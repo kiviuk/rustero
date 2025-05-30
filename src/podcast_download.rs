@@ -4,6 +4,7 @@ use crate::podcast_factory::{ParsedFeed, PodcastFactory};
 use anyhow::Result;
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
+use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct RawFeedData {
@@ -21,6 +22,16 @@ impl RawFeedData {
 #[async_trait]
 pub trait FeedFetcher: Send + Sync {
     async fn fetch(&self, url: &str) -> Result<String, DownloaderError>;
+
+    // New method for HEAD request
+    async fn fetch_headers(&self, url: &str) -> Result<HashMap<String, String>, DownloaderError>;
+
+    // New method for partial content
+    async fn fetch_partial_content(
+        &self,
+        url: &str,
+        byte_range: (u64, u64), // e.g., (0, 4095)
+    ) -> Result<String, DownloaderError>;
 }
 
 // ===== Live http fetcher
@@ -48,6 +59,47 @@ impl FeedFetcher for HttpFeedFetcher {
             .await
             .map_err(DownloaderError::NetworkError)?)
     }
+
+    async fn fetch_headers(&self, url: &str) -> Result<HashMap<String, String>, DownloaderError> {
+        let response = self.client.head(url).send().await.map_err(DownloaderError::NetworkError)?;
+        if !response.status().is_success() {
+            return Err(DownloaderError::Failed(format!(
+                "HEAD request failed with status: {}",
+                response.status()
+            )));
+        }
+        let mut headers_map = HashMap::new();
+        for (key, value) in response.headers().iter() {
+            if let Ok(value_str) = value.to_str() {
+                headers_map.insert(key.as_str().to_lowercase(), value_str.to_string());
+            }
+        }
+        Ok(headers_map)
+    }
+
+    async fn fetch_partial_content(
+        &self,
+        url: &str,
+        byte_range: (u64, u64),
+    ) -> Result<String, DownloaderError> {
+        let response = self
+            .client
+            .get(url)
+            .header("Range", format!("bytes={}-{}", byte_range.0, byte_range.1))
+            .send()
+            .await
+            .map_err(DownloaderError::NetworkError)?;
+
+        if !response.status().is_success()
+            && response.status() != reqwest::StatusCode::PARTIAL_CONTENT
+        {
+            return Err(DownloaderError::Failed(format!(
+                "Partial GET request failed with status: {}",
+                response.status()
+            )));
+        }
+        response.text().await.map_err(DownloaderError::NetworkError)
+    }
 }
 
 // ===== Fake http fetcher for testing
@@ -59,6 +111,35 @@ pub struct FakeFetcher {
 impl FeedFetcher for FakeFetcher {
     async fn fetch(&self, _url: &str) -> Result<String, DownloaderError> {
         Ok(self.response.clone())
+    }
+
+    // New method for HEAD request
+
+    async fn fetch_headers(&self, _url: &str) -> Result<HashMap<String, String>, DownloaderError> {
+        // Return some fake headers, e.g., based on self.response for testing
+        let mut headers = HashMap::new();
+        if self.response.contains("<rss") || self.response.contains("<feed") {
+            headers.insert("content-type".to_string(), "application/xml".to_string());
+        } else {
+            headers.insert("content-type".to_string(), "text/html".to_string());
+        }
+        Ok(headers)
+    }
+
+    // New method for partial content
+    async fn fetch_partial_content(
+        &self,
+        _url: &str,
+        byte_range: (u64, u64),
+    ) -> Result<String, DownloaderError> {
+        let start = byte_range.0 as usize;
+        let end = (byte_range.1 + 1) as usize; // Range is inclusive, slice is exclusive at end
+        if start < self.response.len() {
+            let effective_end = std::cmp::min(end, self.response.len());
+            Ok(self.response[start..effective_end].to_string())
+        } else {
+            Ok("".to_string())
+        }
     }
 }
 

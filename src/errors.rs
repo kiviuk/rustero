@@ -40,9 +40,15 @@ pub enum PipelineError {
         message: String,
         #[source]
         source: Box<dyn std::error::Error + Send + Sync>,
-    }, // Generic source
+    },
     #[error("URL evaluation failed: {0}")]
     EvaluationFailed(String),
+    #[error("Evaluation the url failed with underlying cause: {source}")]
+    EvaluationFailedWithSource {
+        message: String,
+        #[source]
+        source: DownloaderError,
+    },
     #[error("Pipeline is in an invalid state: {0}")]
     InvalidState(String), // e.g., Save called when no podcast in context
     #[error("An earlier step in the pipeline failed: {0}")] // {0} will display source

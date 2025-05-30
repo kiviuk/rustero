@@ -1,12 +1,13 @@
 use ratatui::{
-    Frame,
+    Frame, // Added Wrap for Paragraphs
     backend::Backend,
-    layout::{Constraint, Direction, Layout}, // Added Rect for inner areas if needed
-    style::{Color, Modifier, Style}, // Added Modifier for more styling options
-    widgets::{Block, Borders, List, ListItem, Paragraph, Wrap}, // Added Wrap for Paragraphs
+    layout::{Constraint, Direction, Layout},
+    style::{Color, Modifier, Style}, // Added Rect for inner areas if needed
+    widgets::{Block, Borders, List, ListItem, Paragraph, Wrap}, // Added Modifier for more styling options
 };
 
-use crate::app::App; // Assuming App is in crate::app
+use crate::app::App;
+// Assuming App is in crate::app
 
 pub fn ui<B: Backend>(f: &mut Frame, app: &App) {
     // === Layout Definitions ===
@@ -38,11 +39,12 @@ pub fn ui<B: Backend>(f: &mut Frame, app: &App) {
     let show_notes_chunk = content_columns[2];
 
     // === Player Panel ===
-    let (player_title, player_text) = if let Some((podcast_title, episode_title)) = &app.playing_episode {
-        ("Now Playing".to_string(), format!("▶ {} - {}", podcast_title, episode_title))
-    } else {
-        ("Not Playing".to_string(), " ".to_string()) // Display a space or empty string
-    };
+    let (player_title, player_text) =
+        if let Some((podcast_title, episode_title)) = &app.playing_episode {
+            ("Now Playing".to_string(), format!("▶ {} - {}", podcast_title, episode_title))
+        } else {
+            ("Not Playing".to_string(), " ".to_string()) // Display a space or empty string
+        };
 
     let player_widget = Paragraph::new(player_text)
         .style(Style::default().fg(Color::LightGreen)) // Style for the text
@@ -106,11 +108,12 @@ pub fn ui<B: Backend>(f: &mut Frame, app: &App) {
     };
 
     f.render_widget(
-        episodes_list_widget.block( // Apply the block to the conditionally created List
-                                    Block::default()
-                                        .title("Episodes")
-                                        .borders(Borders::ALL)
-                                        .style(Style::default().fg(Color::White)),
+        episodes_list_widget.block(
+            // Apply the block to the conditionally created List
+            Block::default()
+                .title("Episodes")
+                .borders(Borders::ALL)
+                .style(Style::default().fg(Color::White)),
         ),
         episodes_chunk,
     );

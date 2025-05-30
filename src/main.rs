@@ -1,4 +1,3 @@
-use anyhow::{Result, anyhow};
 use chrono::Utc;
 use rustero::app::{self, App};
 use rustero::commands::command_interpreters::PodcastPipelineInterpreter;
@@ -96,8 +95,6 @@ async fn main() -> anyhow::Result<()> {
     );
     app.podcasts.push(test_podcast2);
 
-
-
     // match result1 {
     //     Ok(data) => {
     //         println!("\nSequence 1 completed successfully.");
@@ -120,6 +117,4 @@ async fn main() -> anyhow::Result<()> {
     //
     // Start the UI with our initialized app
     app::start_ui(Some(app))
-
-
 }
