@@ -9,7 +9,6 @@ use async_trait::async_trait;
 pub struct PipelineData {
     pub last_evaluated_url: Option<PodcastURL>, // Result from EvalUrl
     pub current_podcast: Option<Podcast>,       // Result from Download
-                                                // Add other fields as pipeline evolves
 }
 
 // The Accumulator type that will be threaded through

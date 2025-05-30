@@ -124,6 +124,7 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
         let Ok(mut pipeline_data) = current_acc else {
             return current_acc;
         }; // Propagate error
+
         // Strategy: Use evaluated URL if available, otherwise use the one from the Download command.
         let url_to_use = match &pipeline_data.last_evaluated_url {
             Some(eval_url) => {

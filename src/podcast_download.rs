@@ -126,7 +126,7 @@ impl FeedFetcher for FakeFetcher {
         Ok(headers)
     }
 
-    // New method for partial content
+    // For partial content
     async fn fetch_partial_content(
         &self,
         _url: &str,

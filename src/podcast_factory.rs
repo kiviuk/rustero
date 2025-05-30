@@ -1,6 +1,7 @@
 use crate::errors::DownloaderError;
-use crate::podcast::{Podcast, PodcastURL};
+use crate::podcast::{Episode, EpisodeID, Podcast, PodcastURL};
 use anyhow::Result;
+use chrono::{DateTime, Utc};
 use rss::Channel;
 
 #[derive(Debug)]
@@ -46,13 +47,54 @@ impl PodcastFactory {
         parsed: ParsedFeed,
         feed_url: String,
     ) -> Result<Podcast, DownloaderError> {
+        let mut episodes: Vec<Episode> = parsed
+            .channel
+            .items()
+            .iter()
+            .filter_map(|item| {
+                let id = item
+                    .guid()
+                    .map(|g| g.value().to_string())
+                    .or_else(|| item.link().map(String::from))?;
+                let title = item.title()?.to_string();
+                let description = item.description().map(String::from);
+                let enclosure = item.enclosure()?; // enclosure is Option<rss::Enclosure>
+                let audio_url = enclosure.url().to_string();
+                let size_in_bytes = enclosure.length().parse::<u64>().ok();
+                let duration = item.itunes_ext().and_then(|it| it.duration().map(String::from));
+                let pub_date = item
+                    .pub_date()
+                    .and_then(|s| DateTime::parse_from_rfc2822(s).ok())
+                    .map(|dt| dt.with_timezone(&Utc))
+                    .unwrap_or_else(Utc::now);
+
+                Some(Episode::new(
+                    EpisodeID::new(&id),
+                    title,
+                    description,
+                    pub_date,
+                    duration,
+                    audio_url,
+                    size_in_bytes,
+                ))
+            })
+            .collect();
+
+        if let Some(limit) = self.episode_limit {
+            episodes.truncate(limit);
+        }
+
+        if let EpisodeSortOrder::OldestFirst = self.sort_order {
+            episodes.reverse();
+        }
+
         Ok(Podcast::new(
             PodcastURL::new(&feed_url),
             parsed.channel.title().to_string(),
-            Some(parsed.channel.description()).map(String::from),
+            Some(parsed.channel.description().to_string()),
             parsed.channel.image().map(|img| img.url().to_string()),
             Some(parsed.channel.link().to_string()),
-            vec![], // Empty episodes for now, will be populated based on configuration
+            episodes,
         ))
     }
 }
