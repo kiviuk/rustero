@@ -2,15 +2,12 @@ use anyhow::Result;
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
     execute,
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+    terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
-use ratatui::{
-    backend::Backend,
-    Terminal,
-};
+use ratatui::{Terminal, backend::Backend};
 
+use crate::podcast::{Episode, Podcast, PodcastURL};
 use std::io;
-use crate::podcast::{Podcast, Episode, PodcastURL};
 
 pub struct App {
     pub should_quit: bool,
@@ -19,7 +16,6 @@ pub struct App {
     pub selected_episode_index: Option<usize>,
     pub playing_episode: Option<(String, String)>, // (podcast title, episode title)
 }
-
 
 impl App {
     pub fn new() -> App {
@@ -31,10 +27,12 @@ impl App {
             playing_episode: None,
         }
     }
-    
+
     // Add simple navigation methods
     pub fn select_next_podcast(&mut self) {
-        if self.podcasts.is_empty() { return; }
+        if self.podcasts.is_empty() {
+            return;
+        }
         self.selected_podcast_index = Some(match self.selected_podcast_index {
             Some(i) if i + 1 < self.podcasts.len() => i + 1,
             _ => 0,
@@ -43,7 +41,9 @@ impl App {
     }
 
     pub fn select_prev_podcast(&mut self) {
-        if self.podcasts.is_empty() { return; }
+        if self.podcasts.is_empty() {
+            return;
+        }
         self.selected_podcast_index = Some(match self.selected_podcast_index {
             Some(i) if i > 0 => i - 1,
             _ => self.podcasts.len() - 1,
@@ -56,8 +56,7 @@ impl App {
     }
 
     pub fn selected_episode(&self) -> Option<&Episode> {
-        self.selected_podcast()
-            .and_then(|p| self.selected_episode_index.map(|i| &p.episodes()[i]))
+        self.selected_podcast().and_then(|p| self.selected_episode_index.map(|i| &p.episodes()[i]))
     }
 
     pub fn on_key(&mut self, key: KeyCode) {
@@ -82,8 +81,6 @@ impl App {
         );
         self.podcasts.push(test_podcast);
     }
-
-
 }
 
 pub fn start_ui(initial_app: Option<App>) -> Result<()> {
@@ -110,7 +107,6 @@ pub fn start_ui(initial_app: Option<App>) -> Result<()> {
 
     Ok(())
 }
-
 
 pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> Result<()> {
     while !app.should_quit {

@@ -1,0 +1,1 @@
+cognitive-complexity-threshold = 25 # Default is 15, this allows more complex functions

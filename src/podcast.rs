@@ -1,10 +1,16 @@
-use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
-
+use serde::{Deserialize, Serialize};
+use std::fmt;
 
 // === PODCAST STRUCTURES ===
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PodcastURL(String);
+
+impl std::fmt::Display for PodcastURL {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
 impl PartialEq for PodcastURL {
     fn eq(&self, other: &Self) -> bool {
@@ -17,7 +23,6 @@ impl PartialEq for PodcastURL {
 
 impl Eq for PodcastURL {}
 
-
 impl PodcastURL {
     pub fn new(s: &str) -> Self {
         PodcastURL(s.to_string())
@@ -26,23 +31,18 @@ impl PodcastURL {
     pub fn as_str(&self) -> &str {
         self.0.as_str()
     }
-
 }
 
-impl AsRef<str> for PodcastURL { // Useful for passing to functions expecting &str
-    fn as_ref(&self) -> &str { &self.0 }
+impl AsRef<str> for PodcastURL {
+    // Useful for passing to functions expecting &str
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
 }
 
 // === EPISODE STRUCTURES ===
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EpisodeID(String);
-
-impl EpisodeID {
-    pub fn new(s: &str) -> Self {
-    EpisodeID(s.to_string())
-    }
-}
-
 
 impl std::fmt::Display for EpisodeID {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -50,13 +50,11 @@ impl std::fmt::Display for EpisodeID {
     }
 }
 
-
-impl std::fmt::Display for PodcastURL {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
+impl EpisodeID {
+    pub fn new(s: &str) -> Self {
+        EpisodeID(s.to_string())
     }
 }
-
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Podcast {
@@ -103,15 +101,7 @@ impl Podcast {
         website_url: Option<String>,
         episodes: Vec<Episode>,
     ) -> Self {
-        Self {
-            url,
-            title,
-            description,
-            image_url,
-            website_url,
-            episodes,
-            last_updated: Utc::now(),
-        }
+        Self { url, title, description, image_url, website_url, episodes, last_updated: Utc::now() }
     }
     // Accessor methods
 
@@ -147,7 +137,6 @@ impl Podcast {
     pub fn add_episode(&mut self, episode: Episode) {
         self.episodes.push(episode);
     }
-    
 }
 
 impl Episode {
@@ -160,15 +149,7 @@ impl Episode {
         audio_url: String,
         size_in_bytes: Option<u64>,
     ) -> Self {
-        Self {
-            id,
-            title,
-            description,
-            published_date,
-            duration,
-            audio_url,
-            size_in_bytes,
-        }
+        Self { id, title, description, published_date, duration, audio_url, size_in_bytes }
     }
 
     pub fn id(&self) -> &EpisodeID {
@@ -197,5 +178,23 @@ impl Episode {
 
     pub fn size_in_bytes(&self) -> Option<u64> {
         self.size_in_bytes
+    }
+}
+
+impl fmt::Display for Podcast {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "Title       : {}", self.title)?;
+        writeln!(f, "URL         : {}", self.url)?;
+        if let Some(desc) = &self.description {
+            writeln!(f, "Description : {}", desc)?;
+        }
+        if let Some(img) = &self.image_url {
+            writeln!(f, "Image URL   : {}", img)?;
+        }
+        if let Some(web) = &self.website_url {
+            writeln!(f, "Website URL : {}", web)?;
+        }
+        writeln!(f, "Episodes    : {}", self.episodes.len())?;
+        writeln!(f, "Last updated: {}", self.last_updated)
     }
 }

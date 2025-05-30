@@ -1,5 +1,4 @@
-use crate::podcast;
-use crate::podcast::{EpisodeID, Podcast, PodcastURL};
+use crate::podcast::PodcastURL;
 
 // This enum represents one "layer" of our command structure,
 // including the 'next' command.
@@ -8,7 +7,7 @@ pub enum PodcastCmd {
     EvalUrl(PodcastURL, Box<PodcastCmd>), // Example: String is some input URL to evaluate
     Download(PodcastURL, Box<PodcastCmd>),
     Save(Box<PodcastCmd>), // Implicitly saves data from the accumulator
-    End, // Represents the termination of a command sequence
+    End,                   // Represents the termination of a command sequence
 }
 
 impl PodcastCmd {

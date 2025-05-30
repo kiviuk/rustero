@@ -3,14 +3,8 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum PodcastError {
-    #[error("Network error: {0}")]
-    NetworkError(#[from] reqwest::Error),
-
     #[error("Feed parsing error: {0}")]
     ParseError(String),
-
-    #[error("RSS parsing error: {0}")]
-    RssError(#[from] rss::Error),
 
     #[error("Missing required field: {0}")]
     MissingField(String),
@@ -26,27 +20,31 @@ pub enum PodcastError {
 }
 
 #[derive(Error, Debug)]
-pub enum DownloaderError {}
+pub enum DownloaderError {
+    #[error("Network error: {0}")]
+    NetworkError(#[from] reqwest::Error), // For fetcher.fetch if it uses reqwest directly
+    #[error("RSS parsing error: {0}")]
+    RssError(#[from] rss::Error), // For rss::Channel::read_from
+    #[error("Download failed: {0}")]
+    Failed(String),
+}
 
-
-#[derive(Debug)]
+#[derive(Error, Debug)]
 pub enum PipelineError {
-    DownloadFailed(DownloaderError),
-    SaveFailed(String),
+    #[error("Download operation failed: {0}")]
+    DownloadFailed(#[from] DownloaderError),
+    #[error("Save operation failed: {0}")]
+    SaveFailedWithMessage(String),
+    #[error("Save operation failed with underlying cause: {source}")]
+    SaveFailedWithSource {
+        message: String,
+        #[source]
+        source: Box<dyn std::error::Error + Send + Sync>,
+    }, // Generic source
+    #[error("URL evaluation failed: {0}")]
     EvaluationFailed(String),
+    #[error("Pipeline is in an invalid state: {0}")]
     InvalidState(String), // e.g., Save called when no podcast in context
-    UpstreamError(Box<PipelineError>), // To wrap an error from a previous step
-}
-
-// Optional: Implement std::error::Error and std::fmt::Display for PipelineError
-impl std::fmt::Display for PipelineError { 
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "{:?}", self) } 
-}
-impl std::error::Error for PipelineError {}
-
-// If DownloaderError is distinct and needs conversion
-impl From<DownloaderError> for PipelineError {
-    fn from(err: DownloaderError) -> Self {
-        PipelineError::DownloadFailed(err)
-    }
+    #[error("An earlier step in the pipeline failed: {0}")] // {0} will display source
+    UpstreamError(#[from] Box<PipelineError>),
 }

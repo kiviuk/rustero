@@ -1,119 +1,136 @@
 use ratatui::{
-    backend::Backend,
     Frame,
-    layout::{Constraint, Direction, Layout},
-    style::{Color, Style},
-    widgets::{Block, Borders, List, ListItem, Paragraph},
-    text::Text, 
+    backend::Backend,
+    layout::{Constraint, Direction, Layout}, // Added Rect for inner areas if needed
+    style::{Color, Modifier, Style}, // Added Modifier for more styling options
+    widgets::{Block, Borders, List, ListItem, Paragraph, Wrap}, // Added Wrap for Paragraphs
 };
 
-use crate::app::App;
+use crate::app::App; // Assuming App is in crate::app
+
 pub fn ui<B: Backend>(f: &mut Frame, app: &App) {
-    // First split into vertical sections (top player and main content)
-    let main_layout = Layout::default()
+    // === Layout Definitions ===
+
+    // Main layout: Player (top) and Content (bottom)
+    let main_chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(3),  // Fixed height for player
-            Constraint::Min(0),     // Rest of the space for main content
+            Constraint::Length(3), // Player top
+            Constraint::Min(0),    // Content below
         ])
         .split(f.size());
 
-    // Create the player panel at the top
-    let player_panel = Block::default()
-        .title("Now Playing")
-        .borders(Borders::ALL)
-        .style(Style::default().fg(Color::Green));
-    f.render_widget(player_panel, main_layout[0]);
+    let player_chunk = main_chunks[0];
+    let content_chunk = main_chunks[1];
 
-    // Split the main content area into three equal columns
-    let content_chunks = Layout::default()
+    // Content layout: Podcasts | Episodes | Show Notes
+    let content_columns = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([
-            Constraint::Percentage(33),  // Podcasts list
-            Constraint::Percentage(33),  // Episodes list
-            Constraint::Percentage(34),  // Show notes
+            Constraint::Percentage(33),
+            Constraint::Percentage(33),
+            Constraint::Percentage(34), // Use 34 to sum to 100 with two 33s
         ])
-        .split(main_layout[1]);
+        .split(content_chunk);
 
-    // Left panel (Podcast list)
-    let podcasts_panel = Block::default()
-        .title("Podcasts")
-        .borders(Borders::ALL)
-        .style(Style::default().fg(Color::White));
-    f.render_widget(podcasts_panel, content_chunks[0]);
+    let podcasts_chunk = content_columns[0];
+    let episodes_chunk = content_columns[1];
+    let show_notes_chunk = content_columns[2];
 
-    // Middle panel (Episodes)
-    let episodes_panel = Block::default()
-        .title("Episodes")
-        .borders(Borders::ALL)
-        .style(Style::default().fg(Color::White));
-    f.render_widget(episodes_panel, content_chunks[1]);
+    // === Player Panel ===
+    let (player_title, player_text) = if let Some((podcast_title, episode_title)) = &app.playing_episode {
+        ("Now Playing".to_string(), format!("▶ {} - {}", podcast_title, episode_title))
+    } else {
+        ("Not Playing".to_string(), " ".to_string()) // Display a space or empty string
+    };
 
-    // Right panel (Show notes)
-    let show_notes_panel = Block::default()
-        .title("Show Notes")
-        .borders(Borders::ALL)
-        .style(Style::default().fg(Color::White));
-    f.render_widget(show_notes_panel, content_chunks[2]);
+    let player_widget = Paragraph::new(player_text)
+        .style(Style::default().fg(Color::LightGreen)) // Style for the text
+        .wrap(Wrap { trim: true }) // Wrap text if it's too long
+        .block(
+            Block::default()
+                .title(player_title)
+                .borders(Borders::ALL)
+                .style(Style::default().fg(Color::Green)), // Style for the block
+        );
+    f.render_widget(player_widget, player_chunk);
 
-    // Render podcast titles in left panel
-    let podcast_titles: Vec<ListItem> = app.podcasts
+    // === Podcasts Panel (Left) ===
+    let podcast_list_items: Vec<ListItem> = app
+        .podcasts
         .iter()
         .enumerate()
         .map(|(i, podcast)| {
-            let style = if Some(i) == app.selected_podcast_index {
-                Style::default().fg(Color::Yellow)
+            let item_style = if Some(i) == app.selected_podcast_index {
+                Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
             } else {
-                Style::default()
+                Style::default().fg(Color::White)
             };
-            ListItem::new(podcast.title()).style(style)
+            ListItem::new(podcast.title().to_string()).style(item_style) // Ensure title is String or Text
         })
         .collect();
 
-    let podcasts_list = List::new(podcast_titles)
-        .block(Block::default().title("Podcasts").borders(Borders::ALL));
-    f.render_widget(podcasts_list, content_chunks[0]);
+    let podcasts_list_widget = List::new(podcast_list_items)
+        .block(
+            Block::default()
+                .title("Podcasts")
+                .borders(Borders::ALL)
+                .style(Style::default().fg(Color::White)),
+        )
+        .highlight_style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)) // Consistent with item_style
+        .highlight_symbol(">> "); // Optional: symbol for selected item
+    f.render_widget(podcasts_list_widget, podcasts_chunk);
 
-
-    // Render episodes if a podcast is selected
-    if let Some(podcast) = app.selected_podcast() {
-        let episode_titles: Vec<ListItem> = podcast.episodes()
+    // === Episodes Panel (Middle) ===
+    let episodes_list_widget = if let Some(selected_podcast) = app.selected_podcast() {
+        let episode_list_items: Vec<ListItem> = selected_podcast
+            .episodes()
             .iter()
             .enumerate()
             .map(|(i, episode)| {
-                let style = if Some(i) == app.selected_episode_index {
-                    Style::default().fg(Color::Yellow)
+                let item_style = if Some(i) == app.selected_episode_index {
+                    Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
                 } else {
-                    Style::default()
+                    Style::default().fg(Color::White)
                 };
-                ListItem::new(episode.title()).style(style)
+                ListItem::new(episode.title().to_string()).style(item_style)
             })
             .collect();
 
-        let episodes_list = List::new(episode_titles)
-            .block(Block::default().title("Episodes").borders(Borders::ALL));
-        f.render_widget(episodes_list, content_chunks[1]);
-    }
-
-    // Show notes panel (right)
-    let show_notes = Block::default()
-        .title("Show Notes")
-        .borders(Borders::ALL);
-    f.render_widget(show_notes, content_chunks[2]);
-
-    // Show player info if there's a playing episode
-    if let Some((podcast_title, episode_title)) = &app.playing_episode {
-        let now_playing = format!("▶ {} - {}", podcast_title, episode_title);
-        let player = Paragraph::new(now_playing)
-            .block(Block::default().title("Now Playing").borders(Borders::ALL));
-        f.render_widget(player, main_layout[0]);
+        List::new(episode_list_items)
+            .highlight_style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD))
+            .highlight_symbol(">> ")
     } else {
-        // Show empty player when nothing is playing
-        let player = Block::default()
-            .title("Not Playing")
-            .borders(Borders::ALL);
-        f.render_widget(player, main_layout[0]);
-    }
+        // Display placeholder if no podcast is selected
+        List::new(vec![ListItem::new("No podcast selected")])
+    };
 
+    f.render_widget(
+        episodes_list_widget.block( // Apply the block to the conditionally created List
+                                    Block::default()
+                                        .title("Episodes")
+                                        .borders(Borders::ALL)
+                                        .style(Style::default().fg(Color::White)),
+        ),
+        episodes_chunk,
+    );
+
+    // === Show Notes Panel (Right) ===
+    let show_notes_text = if let Some(episode) = app.selected_episode() {
+        // Assuming Episode has a description method that returns Option<&str>
+        // And that description contains the show notes (might need HTML stripping/formatting)
+        episode.description().unwrap_or("No show notes available.").to_string()
+    } else {
+        "Select an episode to see show notes.".to_string()
+    };
+
+    let show_notes_widget = Paragraph::new(show_notes_text)
+        .wrap(Wrap { trim: true }) // Important for long text
+        .block(
+            Block::default()
+                .title("Show Notes")
+                .borders(Borders::ALL)
+                .style(Style::default().fg(Color::White)),
+        );
+    f.render_widget(show_notes_widget, show_notes_chunk);
 }
-

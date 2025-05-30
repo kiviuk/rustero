@@ -1,9 +1,9 @@
 // src/lib.rs
-pub mod ui;
 pub mod app;
+mod errors;
 pub mod podcast;
 pub mod podcast_download;
 pub mod podcast_factory;
-mod errors;
+pub mod ui;
 
 pub mod commands; // Add this line

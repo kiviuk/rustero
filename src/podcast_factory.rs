@@ -1,7 +1,7 @@
+use crate::errors::DownloaderError;
+use crate::podcast::{Podcast, PodcastURL};
 use anyhow::Result;
 use rss::Channel;
-use crate::errors::PodcastError;
-use crate::podcast::{Podcast, PodcastURL};
 
 #[derive(Debug)]
 pub struct ParsedFeed {
@@ -21,13 +21,9 @@ pub struct PodcastFactory {
 
 impl Default for PodcastFactory {
     fn default() -> Self {
-        Self {
-            episode_limit: None,
-            sort_order: EpisodeSortOrder::NewestFirst,
-        }
+        Self { episode_limit: None, sort_order: EpisodeSortOrder::NewestFirst }
     }
 }
-
 
 impl PodcastFactory {
     pub fn new() -> Self {
@@ -45,7 +41,11 @@ impl PodcastFactory {
         self
     }
 
-    pub fn create_podcast(&self, parsed: ParsedFeed, feed_url: String) -> Result<Podcast, PodcastError> {
+    pub fn create_podcast(
+        &self,
+        parsed: ParsedFeed,
+        feed_url: String,
+    ) -> Result<Podcast, DownloaderError> {
         Ok(Podcast::new(
             PodcastURL::new(&feed_url),
             parsed.channel.title().to_string(),
@@ -69,9 +69,7 @@ mod tests {
             .with_episode_limit(10)
             .with_sort_order(EpisodeSortOrder::NewestFirst);
 
-        let image = ImageBuilder::default()
-            .url("http://example.com/image.jpg".to_string())
-            .build();
+        let image = ImageBuilder::default().url("http://example.com/image.jpg".to_string()).build();
 
         let url = "http://example.com/feed".to_string();
         let channel = ChannelBuilder::default()

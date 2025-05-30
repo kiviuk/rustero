@@ -1,29 +1,19 @@
 // src/podcast_cmd.rs (continued)
-use crate::errors::{PipelineError, PodcastError};
-use crate::podcast::{EpisodeID, Podcast, PodcastURL};
+use crate::errors::PipelineError;
+use crate::podcast::{Podcast, PodcastURL};
 
-use async_trait::async_trait;
 use crate::commands::podcast_commands::PodcastCmd;
+use async_trait::async_trait;
 
 #[derive(Debug, Clone, Default)]
 pub struct PipelineData {
     pub last_evaluated_url: Option<PodcastURL>, // Result from EvalUrl
-    pub current_podcast: Option<Podcast>,     // Result from Download
-    // Add other fields as pipeline evolves
+    pub current_podcast: Option<Podcast>,       // Result from Download
+                                                // Add other fields as pipeline evolves
 }
 
 // The Accumulator type that will be threaded through
 pub type CommandAccumulator = Result<PipelineData, PipelineError>;
-
-impl PipelineData {
-    // Creates a new PipelineData ensuring it's only valid if the previous result was Ok
-    fn from_previous_ok(prev_res: &CommandAccumulator) -> Option<Self> {
-        match prev_res {
-            Ok(data) => Some(data.clone()), // Clone the data to modify
-            Err(_) => None, // If previous was error, can't proceed with data
-        }
-    }
-}
 
 #[async_trait]
 pub trait PodcastAlgebra {
@@ -46,10 +36,7 @@ pub trait PodcastAlgebra {
         current_acc: CommandAccumulator,
     ) -> CommandAccumulator;
 
-    async fn interpret_end(
-        &mut self,
-        final_acc: CommandAccumulator,
-    ) -> CommandAccumulator;
+    async fn interpret_end(&mut self, final_acc: CommandAccumulator) -> CommandAccumulator;
 }
 pub async fn run_commands(
     command: &PodcastCmd,

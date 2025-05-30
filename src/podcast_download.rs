@@ -1,13 +1,9 @@
-use anyhow::Result;
-use chrono::{DateTime, Utc};
-use async_trait::async_trait;
+use crate::errors::DownloaderError;
 use crate::podcast::{Podcast, PodcastURL};
 use crate::podcast_factory::{ParsedFeed, PodcastFactory};
-use crate::errors::PodcastError;
-
-pub struct HttpFeedFetcher {
-    client: reqwest::Client,
-}
+use anyhow::Result;
+use async_trait::async_trait;
+use chrono::{DateTime, Utc};
 
 #[derive(Debug, Clone)]
 pub struct RawFeedData {
@@ -17,50 +13,63 @@ pub struct RawFeedData {
 
 impl RawFeedData {
     pub fn from_string(content: String) -> Self {
-        Self {
-            content,
-            fetch_date: Utc::now(),
-        }
+        Self { content, fetch_date: Utc::now() }
+    }
+}
+
+// ===== fetcher
+#[async_trait]
+pub trait FeedFetcher: Send + Sync {
+    async fn fetch(&self, url: &str) -> Result<String, DownloaderError>;
+}
+
+// ===== Live http fetcher
+pub struct HttpFeedFetcher {
+    client: reqwest::Client,
+}
+
+impl HttpFeedFetcher {
+    pub fn new() -> Self {
+        Self { client: reqwest::Client::new() }
     }
 }
 
 #[async_trait]
-pub trait FeedFetcher {
-    async fn fetch(&self, url: &str) -> Result<String, PodcastError>;
+impl FeedFetcher for HttpFeedFetcher {
+    async fn fetch(&self, url: &str) -> Result<String, DownloaderError> {
+        println!("HttpFeedFetcher: fetching {}", url);
+        Ok(self
+            .client
+            .get(url)
+            .send()
+            .await
+            .map_err(DownloaderError::NetworkError)?
+            .text()
+            .await
+            .map_err(DownloaderError::NetworkError)?)
+    }
 }
 
-// Fake fetcher for testing
+// ===== Fake http fetcher for testing
 pub struct FakeFetcher {
     pub response: String,
 }
 
 #[async_trait]
 impl FeedFetcher for FakeFetcher {
-    async fn fetch(&self, _url: &str) -> Result<String, PodcastError> {
+    async fn fetch(&self, _url: &str) -> Result<String, DownloaderError> {
         Ok(self.response.clone())
     }
 }
 
-impl HttpFeedFetcher {
-    pub fn new() -> Self {
-        Self {
-            client: reqwest::Client::new(),
-        }
-    }
-}
-
-#[async_trait]
-impl FeedFetcher for HttpFeedFetcher {
-    async fn fetch(&self, url: &str) -> Result<String, PodcastError> {
-        Ok(self.client.get(url).send().await?.text().await?)
-    }
-}
-
-
-
 // Implementation of the download function
-pub async fn download_and_create_podcast(url: &PodcastURL, fetcher: &impl FeedFetcher) -> Result<Podcast, PodcastError> {
+pub async fn download_and_create_podcast(
+    url: &PodcastURL,
+    fetcher: &(dyn FeedFetcher + Send + Sync),
+) -> Result<Podcast, DownloaderError> {
+    println!("download_and_create_podcast: Fetching content for URL: {}", url.as_str());
     let content = fetcher.fetch(url.as_str()).await?;
+    println!("download_and_create_podcast: Content fetched, length: {}", content.len());
     let channel = rss::Channel::read_from(content.as_bytes())?;
     let parsed = ParsedFeed { channel };
 
@@ -69,8 +78,8 @@ pub async fn download_and_create_podcast(url: &PodcastURL, fetcher: &impl FeedFe
 
 #[cfg(test)]
 mod tests {
-    use crate::podcast::PodcastURL;
     use super::*;
+    use crate::podcast::PodcastURL;
 
     #[tokio::test]
     async fn test_download_and_create_podcast() {
@@ -87,16 +96,13 @@ mod tests {
                     </image>
                 </channel>
             </rss>
-        "#.to_string();
+        "#
+        .to_string();
 
-        let fetcher = FakeFetcher {
-            response: dummy_feed,
-        };
+        let fetcher = FakeFetcher { response: dummy_feed };
 
         let url = PodcastURL::new("http://example.com/feed");
-        let podcast = download_and_create_podcast(&url, &fetcher)
-            .await
-            .unwrap();
+        let podcast = download_and_create_podcast(&url, &fetcher).await.unwrap();
 
         assert_eq!(podcast.title(), "Test Podcast");
         assert_eq!(podcast.url().as_str(), url.as_str());
@@ -122,16 +128,14 @@ mod tests {
     }
 
     // SAD PATHS
-    
+
     #[tokio::test]
     async fn test_malformed_feed() {
         let malformed_xml = r#"<?xml version="1.0"?><rss><channel>"#;
-        let fetcher = FakeFetcher {
-            response: malformed_xml.to_string(),
-        };
+        let fetcher = FakeFetcher { response: malformed_xml.to_string() };
 
-        let result = download_and_create_podcast(&PodcastURL::new("http://example.com"), &fetcher).await;
-        assert!(matches!(result, Err(PodcastError::RssError(_))));  // Changed this line
+        let result =
+            download_and_create_podcast(&PodcastURL::new("http://example.com"), &fetcher).await;
+        assert!(matches!(result, Err(DownloaderError::RssError(_))));
     }
-
 }
