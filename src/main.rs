@@ -1,11 +1,36 @@
 use chrono::Utc;
 use rustero::app::{self, App};
 use rustero::commands::command_interpreters::PodcastPipelineInterpreter;
-use rustero::commands::podcast_algebra::{CommandAccumulator, PipelineData, run_commands};
+use rustero::commands::podcast_algebra::{CommandAccumulator, PipelineData};
 use rustero::commands::podcast_commands::PodcastCmd;
 use rustero::podcast::{Episode, EpisodeID, Podcast, PodcastURL};
 use rustero::podcast_download::{FeedFetcher, HttpFeedFetcher};
 use std::sync::Arc;
+
+const SAMPLE_SHOW_NOTES_1: &str = r#"
+<h1>Welcome to Episode 42: The Future of Rust</h1>
+
+<p>In this episode, we talk with <strong>Jane Doe</strong>, a senior engineer at Rustaceans Inc., about what's coming next in the Rust ecosystem.</p>
+
+<ul>
+  <li>🦀 The impact of <a href="https://blog.rust-lang.org">Rust 2024 Edition</a></li>
+  <li>📦 Tips for managing large crates</li>
+  <li>🛠️ Async/Await best practices in real-world projects</li>
+</ul>
+
+<blockquote>
+  “Rust lets us write safe, fast code — and helps us sleep better at night.” – Jane Doe
+</blockquote>
+
+<h2>Resources Mentioned</h2>
+<ol>
+  <li><a href="https://doc.rust-lang.org/book/">The Rust Book</a></li>
+  <li><a href="https://tokio.rs">Tokio Async Runtime</a></li>
+  <li><a href="https://serde.rs">Serde Serialization</a></li>
+</ol>
+
+<p>Be sure to <strong>subscribe</strong> and leave us a review on your favorite podcast app!</p>
+"#;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -28,14 +53,14 @@ async fn main() -> anyhow::Result<()> {
 
     println!("--- Running Sequence 1: Eval -> Download -> Save ---");
     let initial_acc: CommandAccumulator = Ok(PipelineData::default());
-    let result1 = run_commands(&cmd_seq1, initial_acc, &mut interpreter).await;
+    // let result1 = run_commands(&cmd_seq1, initial_acc, &mut interpreter).await;
 
     // Create test episodes using the proper constructor
     let test_episodes_1 = vec![
         Episode::new(
             EpisodeID::new("ep1"),
             "First Episode".to_string(),
-            Some("This is episode 1".to_string()),
+            Some(SAMPLE_SHOW_NOTES_1.to_string()),
             Utc::now(),
             Some("20:00".to_string()),
             "http://example.com/ep1.mp3".to_string(),
@@ -82,7 +107,7 @@ async fn main() -> anyhow::Result<()> {
         None,
         test_episodes_1.clone(),
     );
-    app.podcasts.push(test_podcast);
+    app.add_podcast(test_podcast);
 
     // Add another test podcast
     let test_podcast2 = Podcast::new(
@@ -93,7 +118,7 @@ async fn main() -> anyhow::Result<()> {
         None,
         test_episodes_2.clone(),
     );
-    app.podcasts.push(test_podcast2);
+    app.add_podcast(test_podcast2);
 
     // match result1 {
     //     Ok(data) => {

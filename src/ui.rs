@@ -1,13 +1,49 @@
 use ratatui::{
-    Frame, // Added Wrap for Paragraphs
-    backend::Backend,
-    layout::{Constraint, Direction, Layout},
-    style::{Color, Modifier, Style}, // Added Rect for inner areas if needed
-    widgets::{Block, Borders, List, ListItem, Paragraph, Wrap}, // Added Modifier for more styling options
+    Frame,                                   // Added Rect for inner areas if needed
+    backend::Backend,                        // Added Modifier for more styling options
+    layout::{Constraint, Direction, Layout}, // Added Wrap for Paragraphs
+    style::{Color, Modifier, Style},
+    widgets::{Block, Borders, List, ListItem, Paragraph, Wrap},
 };
 
-use crate::app::App;
-// Assuming App is in crate::app
+use crate::app::{App, FocusedPanel};
+
+// At the top of your ui.rs or in a utility module
+// Assuming html2text is in your Cargo.toml and imported
+// use html2text; // if not already in scope
+
+fn format_description(description: Option<&str>) -> String {
+    match description {
+        Some(desc_str) => {
+            // A simple heuristic: if it looks like HTML, try to convert it.
+            if desc_str.contains('<') && desc_str.contains('>') && desc_str.contains("</") {
+                // Slightly better HTML check
+                match html2text::from_read(desc_str.as_bytes(), 80) {
+                    // 80 is example width
+                    Ok(text_content) => {
+                        // Process the successfully converted text
+                        text_content
+                            .lines()
+                            .map(|line| line.trim_end()) // Trim trailing whitespace
+                            .filter(|line| !line.is_empty()) // Optional: remove empty lines
+                            .collect::<Vec<&str>>() // Collect as Vec<&str> first
+                            .join("\n")
+                    }
+                    Err(_e) => {
+                        // If html2text fails, fallback to rendering the original string
+                        // You might want to log the error _e here for debugging
+                        eprintln!("Failed to parse HTML description with html2text: {}", _e);
+                        desc_str.to_string() // Fallback
+                    }
+                }
+            } else {
+                // Assume it's plain text or Markdown that we're not yet processing richly
+                desc_str.to_string()
+            }
+        }
+        None => "No show notes available for this episode.".to_string(),
+    }
+}
 
 pub fn ui<B: Backend>(f: &mut Frame, app: &App) {
     // === Layout Definitions ===
@@ -18,11 +54,13 @@ pub fn ui<B: Backend>(f: &mut Frame, app: &App) {
         .constraints([
             Constraint::Length(3), // Player top
             Constraint::Min(0),    // Content below
+            Constraint::Length(1), // Hint bar at the bottom (or 2 for borders + text)
         ])
         .split(f.size());
 
     let player_chunk = main_chunks[0];
     let content_chunk = main_chunks[1];
+    let hint_chunk = main_chunks[2]; // Chunk for the hint bar
 
     // Content layout: Podcasts | Episodes | Show Notes
     let content_columns = Layout::default()
@@ -38,6 +76,15 @@ pub fn ui<B: Backend>(f: &mut Frame, app: &App) {
     let episodes_chunk = content_columns[1];
     let show_notes_chunk = content_columns[2];
 
+    // === Define Styles ===
+    let default_style = Style::default().fg(Color::White);
+    let focused_style = Style::default().fg(Color::Cyan); // Or another distinct color like LightBlue
+    let selected_item_style = Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD);
+    let unfocused_selected_item_style = Style::default().fg(Color::LightCyan); // If you want to dim selection in unfocused lists
+
+    let selected_podcast = app.selected_podcast();
+    let selected_episode = app.selected_episode();
+
     // === Player Panel ===
     let (player_title, player_text) =
         if let Some((podcast_title, episode_title)) = &app.playing_episode {
@@ -47,7 +94,7 @@ pub fn ui<B: Backend>(f: &mut Frame, app: &App) {
         };
 
     let player_widget = Paragraph::new(player_text)
-        .style(Style::default().fg(Color::LightGreen)) // Style for the text
+        // .style(Style::default().fg(Color::LightGreen)) // Style for the text
         .wrap(Wrap { trim: true }) // Wrap text if it's too long
         .block(
             Block::default()
@@ -57,83 +104,157 @@ pub fn ui<B: Backend>(f: &mut Frame, app: &App) {
         );
     f.render_widget(player_widget, player_chunk);
 
-    // === Podcasts Panel (Left) ===
+    // =============================================================================================
+    // ================================== Podcasts Panel (Left) ===================================
+    let is_podcasts_focused = app.focused_panel == FocusedPanel::Podcasts;
+    let podcasts_block = Block::default() // Create the block styling separately
+        .title("Podcasts")
+        .borders(Borders::ALL)
+        .border_style(if is_podcasts_focused { focused_style } else { default_style });
+
     let podcast_list_items: Vec<ListItem> = app
         .podcasts
         .iter()
         .enumerate()
         .map(|(i, podcast)| {
-            let item_style = if Some(i) == app.selected_podcast_index {
-                Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
+            let mut item = ListItem::new(podcast.title().to_string());
+            if Some(i) == app.selected_podcast_index {
+                if is_podcasts_focused {
+                    item = item.style(selected_item_style); // Use the global Yellow Bold
+                } else {
+                    item = item.style(unfocused_selected_item_style); // Use the global DarkGray
+                }
             } else {
-                Style::default().fg(Color::White)
-            };
-            ListItem::new(podcast.title().to_string()).style(item_style) // Ensure title is String or Text
+                item = item.style(default_style); // Non-selected items
+            }
+            item
         })
         .collect();
 
     let podcasts_list_widget = List::new(podcast_list_items)
-        .block(
-            Block::default()
-                .title("Podcasts")
-                .borders(Borders::ALL)
-                .style(Style::default().fg(Color::White)),
-        )
-        .highlight_style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)) // Consistent with item_style
-        .highlight_symbol(">> "); // Optional: symbol for selected item
+        .block(podcasts_block) // Pass the pre-styled block
+        .highlight_symbol(if is_podcasts_focused { ">> " } else { "   " }); // Keep this conditional
+
     f.render_widget(podcasts_list_widget, podcasts_chunk);
 
-    // === Episodes Panel (Middle) ===
-    let episodes_list_widget = if let Some(selected_podcast) = app.selected_podcast() {
-        let episode_list_items: Vec<ListItem> = selected_podcast
-            .episodes()
-            .iter()
-            .enumerate()
-            .map(|(i, episode)| {
-                let item_style = if Some(i) == app.selected_episode_index {
-                    Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
-                } else {
-                    Style::default().fg(Color::White)
-                };
-                ListItem::new(episode.title().to_string()).style(item_style)
-            })
-            .collect();
+    // =============================================================================================
+    // ============================== Episodes Panel (Middle) ======================================
+    let is_episode_focused = app.focused_panel == FocusedPanel::Episodes;
 
-        List::new(episode_list_items)
-            .highlight_style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD))
-            .highlight_symbol(">> ")
-    } else {
-        // Display placeholder if no podcast is selected
-        List::new(vec![ListItem::new("No podcast selected")])
+    // 1. Prepare List Items or Placeholder Message for Episodes
+    let episode_list_items: Vec<ListItem> = match selected_podcast {
+        Some(selected_podcast) => {
+            if selected_podcast.episodes().is_empty() {
+                vec![ListItem::new("No episodes for this podcast").style(default_style)]
+            } else {
+                selected_podcast
+                    .episodes()
+                    .iter()
+                    .enumerate()
+                    .map(|(i, episode)| {
+                        let mut item = ListItem::new(episode.title().to_string());
+                        if Some(i) == app.selected_episode_index {
+                            item = item.style(if is_episode_focused {
+                                selected_item_style
+                            } else {
+                                unfocused_selected_item_style
+                            });
+                        } else {
+                            item = item.style(default_style); // Non-selected items
+                        }
+                        item
+                    })
+                    .collect()
+            }
+        }
+        None => {
+            vec![ListItem::new("Select a podcast to see episodes").style(default_style)]
+        }
     };
 
-    f.render_widget(
-        episodes_list_widget.block(
-            // Apply the block to the conditionally created List
-            Block::default()
-                .title("Episodes")
-                .borders(Borders::ALL)
-                .style(Style::default().fg(Color::White)),
-        ),
-        episodes_chunk,
+    // 2. Prepare the Block for the Episodes Panel
+    let episode_panel_title = selected_podcast.map_or_else(
+        || "Episodes".to_string(), // Default title if no podcast selected
+        |p| format!("Episodes for '{}'", p.title()), // Title with podcast name
     );
 
-    // === Show Notes Panel (Right) ===
-    let show_notes_text = if let Some(episode) = app.selected_episode() {
-        // Assuming Episode has a description method that returns Option<&str>
-        // And that description contains the show notes (might need HTML stripping/formatting)
-        episode.description().unwrap_or("No show notes available.").to_string()
+    let episodes_block = Block::default()
+        .title(episode_panel_title) // Use the determined title
+        .borders(Borders::ALL)
+        .border_style(if is_episode_focused { focused_style } else { default_style });
+
+    // 3. Construct the List Widget
+    let episodes_list_widget = List::new(episode_list_items)
+        .block(episodes_block)
+        .highlight_symbol(if is_episode_focused { ">> " } else { "   " });
+    // .highlight_style(selected_item_style) // Still optional/conditional based on ListState usage
+
+    f.render_widget(episodes_list_widget, episodes_chunk);
+
+    // =============================================================================================
+    // ============================== Show Notes Panel (Right) =====================================
+    let is_show_notes_focused = app.focused_panel == FocusedPanel::ShowNotes;
+
+    // 1. Prepare Show Notes Text Content
+    let show_notes_text_content = if let Some(episode) = selected_episode {
+        format_description(episode.description())
+    } else if selected_podcast.is_some() {
+        "Select an episode to see its show notes.".to_string()
     } else {
-        "Select an episode to see show notes.".to_string()
+        "Select a podcast and then an episode to see show notes.".to_string()
     };
 
-    let show_notes_widget = Paragraph::new(show_notes_text)
-        .wrap(Wrap { trim: true }) // Important for long text
-        .block(
-            Block::default()
-                .title("Show Notes")
-                .borders(Borders::ALL)
-                .style(Style::default().fg(Color::White)),
-        );
+    // 2. Prepare the Dynamic Panel Title
+    let show_notes_panel_title_string: String = match selected_podcast {
+        Some(podcast) => {
+            match selected_episode {
+                Some(episode) => {
+                    // Both podcast and episode are selected
+                    format!("Show Notes: {} - {}", podcast.title(), episode.title())
+                }
+                None => {
+                    // Only podcast is selected, no specific episode yet
+                    format!("Show Notes for '{}' (Select an episode)", podcast.title())
+                }
+            }
+        }
+        None => {
+            // No podcast selected
+            "Show Notes".to_string()
+        }
+    };
+
+    // 3. Prepare the Block for the Show Notes Panel
+    let show_notes_block = Block::default()
+        .title(show_notes_panel_title_string) // Use the dynamically created title string
+        .borders(Borders::ALL)
+        .border_style(if is_show_notes_focused { focused_style } else { default_style });
+
+    // 4. Construct the Paragraph Widget
+    let show_notes_widget = Paragraph::new(show_notes_text_content)
+        .wrap(Wrap { trim: true })
+        .style(default_style) // Assuming default_style for the text
+        .block(show_notes_block);
+
+    // 5. Render
     f.render_widget(show_notes_widget, show_notes_chunk);
+
+    // =============================================================================================
+    // =============================== Hint Bar Panel (Bottom) =====================================
+
+    // === Hint Bar / Status Bar (Bottom) ===
+    let hint_text = "[←/→/Tab] Switch Panel | [↑/↓] Navigate List | [Space] Play/Pause | [Q] Quit";
+    // You can make this dynamic later if keybindings change based on context
+
+    let hint_widget = Paragraph::new(hint_text)
+        .style(Style::default().fg(Color::DarkGray)) // Subtle color for hints
+        .alignment(ratatui::layout::Alignment::Center); // Optional: center the text
+
+    // If you want borders around the hint bar (Constraint::Length(3) for main_chunks[2] then):
+    // let hint_widget = Paragraph::new(hint_text)
+    //     .style(Style::default().fg(Color::DarkGray))
+    //     .alignment(ratatui::layout::Alignment::Center)
+    //     .block(Block::default().borders(Borders::TOP)); // Only top border
+
+    f.render_widget(hint_widget, hint_chunk);
 }
