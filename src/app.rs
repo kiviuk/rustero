@@ -44,7 +44,6 @@ impl App {
             selected_episode_index: None,
             playing_episode: None,
             focused_panel: FocusedPanel::default(), // Initialize focused panel
-            //show_notes_scroll: 0,                   // Initialize scroll to 0
             show_notes_state: ScrollableParagraphState::default(),
         };
 
@@ -332,6 +331,8 @@ pub fn start_ui(initial_app: Option<App>) -> Result<()> {
 
 pub fn run_app_loop<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> Result<()> {
     while !app.should_quit {
+        let frame_size = terminal.get_frame().size(); // Fetch once before drawing
+        crate::ui::prepare_ui_layout(app, frame_size);
         terminal.draw(|f| crate::ui::ui::<B>(f, app))?;
 
         if event::poll(std::time::Duration::from_millis(100))? {

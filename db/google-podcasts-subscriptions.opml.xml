@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<opml version="1.0">
+    <head>
+        <title>Google Podcasts Feeds</title>
+    </head>
+    <body>
+        <outline text="feeds">
+            <outline xmlUrl="https://feeds.pacific-content.com/commandlineheroes" type="rss"
+                     text="Command Line Heroes"/>
+            <outline xmlUrl="https://feeds.buzzsprout.com/1714721.rss" type="rss"
+                     text="GOTO - Today, Tomorrow and the Future"/>
+            <outline xmlUrl="https://feeds.resonaterecordings.com/software-unscripted" type="rss"
+                     text="Software Unscripted"/>
+            <outline xmlUrl="https://feeds.soundcloud.com/users/soundcloud:users:981779980/sounds.rss" type="rss"
+                     text="ICRC Humanitarian Law and Policy Blog"/>
+            <outline xmlUrl="https://feeds.transistor.fm/programming-throwdown" type="rss"
+                     text="Programming Throwdown"/>
+            <outline xmlUrl="https://scala.love/feed/sonus-feed" type="rss" text="Scala Love"/>
+            <outline xmlUrl="https://www.codingblocks.net/current-podcast-feed.xml" type="rss"
+                     text="Coding Blocks | Software and Web Programming / Security / Best Practices / Microsoft .NET"/>
+            <outline xmlUrl="https://www.codingblocks.net/podcast-feed.xml" type="rss" text="Coding Blocks"/>
+            <outline xmlUrl="https://www.bsdnow.tv/rss" type="rss" text="BSD Now"/>
+            <outline xmlUrl="https://www.arraycast.com/episodes?format=rss" type="rss" text="The Array Cast"/>
+            <outline xmlUrl="https://feeds.buzzsprout.com/1501960.rss" type="rss"
+                     text="Algorithms + Data Structures = Programs"/>
+            <outline xmlUrl="https://pc.argudiss.de/" type="rss" text="Aus dem Argudiss-Archiv"/>
+            <outline xmlUrl="https://feeds.simplecast.com/dnJhzmyN" type="rss" text="Verbrechen"/>
+            <outline xmlUrl="https://anchor.fm/s/eeb9bec/podcast/rss" type="rss" text="Vitamin X - der Podcast"/>
+            <outline xmlUrl="https://feeds.buzzsprout.com/1890340.rss" type="rss" text="The Deprogram"/>
+            <outline xmlUrl="https://feeds.megaphone.fm/hubermanlab" type="rss" text="Huberman Lab"/>
+            <outline xmlUrl="https://feeds.buzzsprout.com/1830936.rss" type="rss" text="Tooling Talks"/>
+            <outline xmlUrl="https://feeds.simplecast.com/BqbsxVfO" type="rss" text="99% Invisible"/>
+            <outline xmlUrl="https://historyofrome.libsyn.com/rss" type="rss" text="The History of Rome"/>
+            <outline xmlUrl="https://www.zeitsprung.fm/feed/ogg/" type="rss" text="Geschichten aus der Geschichte"/>
+            <outline xmlUrl="https://generalintellectunit.net/feed.xml" type="rss" text="General Intellect Unit"/>
+            <outline xmlUrl="https://feeds.soundcloud.com/users/soundcloud:users:627190089/sounds.rss" type="rss"
+                     text="ClojureStream Podcast"/>
+            <outline xmlUrl="https://feeds.therepl.net/therepl" type="rss" text="The REPL"/>
+            <outline xmlUrl="https://clojuredesign.club/index.xml" type="rss" text="Functional Design in Clojure"/>
+            <outline xmlUrl="https://www.functionalgeekery.com/feed/podcast/" type="rss" text="Functional Geekery"/>
+            <outline xmlUrl="https://feeds.megaphone.fm/sed" type="rss" text="Software Engineering Daily"/>
+            <outline xmlUrl="https://seradio.libsyn.com/rss" type="rss"
+                     text="Software Engineering Radio - the podcast for professional software developers"/>
+            <outline xmlUrl="https://www.newcomer.co/feed" type="rss" text="Newcomer"/>
+            <outline xmlUrl="https://feeds.narando.com/feeds/be2dab30-295e-4102-8aa1-e8542c3c0775/rendered/rss"
+                     type="rss" text="Podcastillon"/>
+            <outline xmlUrl="https://lexfridman.com/feed/podcast/" type="rss" text="Lex Fridman Podcast"/>
+            <outline
+                    xmlUrl="https://www.omnycontent.com/d/playlist/e73c998e-6e60-432f-8610-ae210140c5b1/a91018a4-ea4f-4130-bf55-ae270180c327/44710ecc-10bb-48d1-93c7-ae270180c33e/podcast.rss"
+                    type="rss" text="Stuff You Should Know"/>
+            <outline xmlUrl="https://video-api.wsj.com/podcast/rss/wsj/tech-news-briefing" type="rss"
+                     text="WSJ Tech News Briefing"/>
+            <outline xmlUrl="https://feeds.simplecast.com/K1_mv0CJ" type="rss" text="Software Engineering Unlocked"/>
+            <outline xmlUrl="https://feeds.buzzsprout.com/1422892.rss" type="rss" text="Dev Interrupted"/>
+            <outline xmlUrl="https://feeds.captivate.fm/level-up-engineering/" type="rss" text="Level-up Engineering"/>
+            <outline xmlUrl="https://anchor.fm/s/1bec0d90/podcast/rss" type="rss" text="Supermanagers"/>
+            <outline xmlUrl="https://feeds.simplecast.com/47yfLpm0" type="rss" text="The Secure Developer"/>
+            <outline xmlUrl="https://changelog.com/podcast/feed" type="rss"
+                     text="The Changelog: Software Development, Open Source"/>
+            <outline xmlUrl="https://feeds.soundcloud.com/users/soundcloud:users:492135420/sounds.rss" type="rss"
+                     text="QAA Podcast"/>
+            <outline xmlUrl="https://feeds.simplecast.com/XA_851k3" type="rss" text="The Stack Overflow Podcast"/>
+            <outline xmlUrl="https://feeds.transistor.fm/the-indie-hackers-podcast" type="rss" text="Indie Hackers"/>
+        </outline>
+    </body>
+</opml>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="ASCII"?>
+<opml version="2.0">
+    <head>
+        <title>castero feeds</title>
+    </head>
+    <body>
+        <outline type="rss" text="99% Invisible" xmlUrl="https://feeds.simplecast.com/BqbsxVfO"/>
+        <outline type="rss" text="Algorithms + Data Structures = Programs"
+                 xmlUrl="https://feeds.buzzsprout.com/1501960.rss"/>
+        <outline type="rss" text="BSD Now" xmlUrl="https://www.bsdnow.tv/rss"/>
+        <outline type="rss" text="ClojureStream Podcast"
+                 xmlUrl="https://feeds.soundcloud.com/users/soundcloud:users:627190089/sounds.rss"/>
+        <outline type="rss" text="Coding Blocks" xmlUrl="https://www.codingblocks.net/podcast-feed.xml"/>
+        <outline type="rss"
+                 text="Coding Blocks | Software and Web Programming / Security / Best Practices / Microsoft .NET"
+                 xmlUrl="https://www.codingblocks.net/current-podcast-feed.xml"/>
+        <outline type="rss" text="Dev Interrupted" xmlUrl="https://feeds.buzzsprout.com/1422892.rss"/>
+        <outline type="rss" text="Developer Voices" xmlUrl="https://feeds.zencastr.com/f/oSn1i316.rss"/>
+        <outline type="rss" text="devtools.fm: Developer Tools, Open Source, Software Development"
+                 xmlUrl="https://anchor.fm/s/dd6922b4/podcast/rss"/>
+        <outline type="rss" text="Functional Design in Clojure" xmlUrl="https://clojuredesign.club/index.xml"/>
+        <outline type="rss" text="Functional Geekery" xmlUrl="https://www.functionalgeekery.com/feed/podcast/"/>
+        <outline type="rss" text="Geschichten aus der Geschichte" xmlUrl="https://www.geschichte.fm/feed/mp3/"/>
+        <outline type="rss" text="Happy Path Programming" xmlUrl="https://anchor.fm/s/2ed56aa0/podcast/rss"/>
+        <outline type="rss" text="Huberman Lab" xmlUrl="https://feeds.megaphone.fm/hubermanlab"/>
+        <outline type="rss" text="Indie Hackers" xmlUrl="https://feeds.transistor.fm/the-indie-hackers-podcast"/>
+        <outline type="rss" text="Level-up Engineering" xmlUrl="https://feeds.captivate.fm/level-up-engineering/"/>
+        <outline type="rss" text="Lex Fridman Podcast" xmlUrl="https://lexfridman.com/feed/podcast/"/>
+        <outline type="rss" text="Newcomer" xmlUrl="https://www.newcomer.co/feed/"/>
+        <outline type="rss" text="Podcastillon"
+                 xmlUrl="https://feeds.narando.com/feeds/be2dab30-295e-4102-8aa1-e8542c3c0775/rendered/rss"/>
+        <outline type="rss" text="Programming Throwdown" xmlUrl="https://feeds.transistor.fm/programming-throwdown"/>
+        <outline type="rss" text="QAA Podcast"
+                 xmlUrl="https://feeds.soundcloud.com/users/soundcloud:users:492135420/sounds.rss"/>
+        <outline type="rss" text="Software Engineering Daily" xmlUrl="https://feeds.megaphone.fm/SED4843981401"/>
+        <outline type="rss" text="Software Engineering Radio - the podcast for professional software developers"
+                 xmlUrl="https://seradio.libsyn.com/rss"/>
+        <outline type="rss" text="Software Engineering Unlocked" xmlUrl="https://feeds.simplecast.com/K1_mv0CJ"/>
+        <outline type="rss" text="Software Unscripted"
+                 xmlUrl="https://feeds.resonaterecordings.com/software-unscripted"/>
+        <outline type="rss" text="Stuff You Should Know"
+                 xmlUrl="https://www.omnycontent.com/d/playlist/e73c998e-6e60-432f-8610-ae210140c5b1/a91018a4-ea4f-4130-bf55-ae270180c327/44710ecc-10bb-48d1-93c7-ae270180c33e/podcast.rss"/>
+        <outline type="rss" text="Supermanagers" xmlUrl="https://anchor.fm/s/1bec0d90/podcast/rss"/>
+        <outline type="rss" text="The Array Cast" xmlUrl="https://www.arraycast.com/episodes?format=rss"/>
+        <outline type="rss" text="The Changelog: Software Development, Open Source"
+                 xmlUrl="https://changelog.com/podcast/feed"/>
+        <outline type="rss" text="The History of Rome" xmlUrl="https://historyofrome.libsyn.com/rss"/>
+        <outline type="rss" text="The Secure Developer" xmlUrl="https://feeds.simplecast.com/47yfLpm0"/>
+        <outline type="rss" text="The Stack Overflow Podcast" xmlUrl="https://feeds.simplecast.com/XA_851k3"/>
+        <outline type="rss" text="Tooling Talks" xmlUrl="https://feeds.buzzsprout.com/1830936.rss"/>
+        <outline type="rss" text="Verbrechen" xmlUrl="https://verbrechen.podigee.io/feed/mp3"/>
+    </body>
+</opml>

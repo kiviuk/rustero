@@ -1,12 +1,11 @@
+use crate::app::{App, FocusedPanel};
 use ratatui::{
     Frame,
-    backend::Backend,                        // Added Rect for inner areas if needed
-    layout::{Constraint, Direction, Layout}, // Added Modifier for more styling options
-    style::{Color, Modifier, Style},         // Added Wrap for Paragraphs
-    widgets::{Block, Borders, List, ListItem, Paragraph, Wrap},
+    backend::Backend,
+    layout::{Constraint, Direction, Layout, Rect}, // Added Rect for inner areas if needed
+    style::{Color, Modifier, Style},               // Added Modifier for more styling options
+    widgets::{Block, Borders, List, ListItem, Paragraph, Wrap}, // Added Wrap for Paragraphs
 };
-
-use crate::app::{App, FocusedPanel};
 
 /// Formats a given description string by either processing it as HTML, plain text,
 /// or returning a default message if the description is `None`.
@@ -63,38 +62,92 @@ pub fn format_description(description: Option<&str>) -> String {
         }
         None => "No show notes available for this episode.".to_string(),
     }
+    .trim()
+    .to_string()
 }
 
-pub fn ui<B: Backend>(f: &mut Frame, app: &App) {
-    // === Layout Definitions ===
+pub struct LayoutChunks {
+    pub player_chunk: Rect,
+    pub content_chunk: Rect,
+    pub hint_chunk: Rect,
+    pub podcasts_chunk: Rect,
+    pub episodes_chunk: Rect,
+    pub show_notes_chunk: Rect,
+}
 
-    // Main layout: Player (top) and Content (bottom)
+pub fn compute_layout(frame_size: Rect) -> LayoutChunks {
     let main_chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([
-            Constraint::Length(3), // Player top
-            Constraint::Min(0),    // Content below
-            Constraint::Length(1), // Hint bar at the bottom (or 2 for borders + text)
-        ])
-        .split(f.size());
+        .constraints([Constraint::Length(3), Constraint::Min(0), Constraint::Length(1)])
+        .split(frame_size);
 
-    let player_chunk = main_chunks[0];
     let content_chunk = main_chunks[1];
-    let hint_chunk = main_chunks[2]; // Chunk for the hint bar
 
-    // Content layout: Podcasts | Episodes | Show Notes
     let content_columns = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([
             Constraint::Percentage(33),
             Constraint::Percentage(33),
-            Constraint::Percentage(34), // Use 34 to sum to 100 with two 33s
+            Constraint::Percentage(34),
         ])
         .split(content_chunk);
 
-    let podcasts_chunk = content_columns[0];
-    let episodes_chunk = content_columns[1];
-    let show_notes_chunk = content_columns[2];
+    LayoutChunks {
+        player_chunk: main_chunks[0],
+        content_chunk,
+        hint_chunk: main_chunks[2],
+        podcasts_chunk: content_columns[0],
+        episodes_chunk: content_columns[1],
+        show_notes_chunk: content_columns[2],
+    }
+}
+
+/// This function prepares layout (only for show_notes height right now)
+/// and updates mutable state outside the draw closure.
+pub fn prepare_ui_layout(app: &mut App, frame_size: Rect) {
+    let layout_chunks = compute_layout(frame_size);
+
+    let is_show_notes_focused = app.focused_panel == FocusedPanel::ShowNotes; // Need app state for focus style
+    let focused_style = Style::default().fg(Color::Cyan); // Assuming these are accessible or defined
+    let default_style = Style::default().fg(Color::White);
+
+    // Temporarily construct the block to get its inner dimensions.
+    // The title string here doesn't have to be the final dynamic one,
+    // as long as it doesn't change the *height* of the title area.
+    // If the title string can wrap and take multiple lines, this becomes more complex.
+    // Assuming single-line titles for now for simplicity of inner calculation.
+    let temp_show_notes_block = Block::default()
+        .title("Show Notes Placeholder") // Placeholder or actual title logic
+        .borders(Borders::ALL)
+        .border_style(if is_show_notes_focused { focused_style } else { default_style });
+
+    // 2. Calculate the inner area of this block IF IT WERE RENDERED in show_notes_chunk.
+    let inner_area = temp_show_notes_block.inner(layout_chunks.show_notes_chunk);
+    //
+    // eprintln!("--- UI Frame ---");
+    // eprintln!("Show Notes Chunk: {:?}", layout_chunks.show_notes_chunk);
+    // eprintln!("Inner Area for Paragraph: {:?}", inner_area);
+    // eprintln!("Set state dimensions to: width={}, height={}", inner_area.width, inner_area.height);
+    // eprintln!("App Show Notes State - panel_w: {}, panel_h: {}", app.show_notes_state.panel_width, app.show_notes_state.panel_height);
+    // eprintln!("App Show Notes State - content lines: {}", app.show_notes_state.content.lines().count());
+    // eprintln!("App Show Notes State - max_scroll: {}", app.show_notes_state.max_scroll_vertical()); // Call internal directly for debug
+    // eprintln!("App Show Notes State - current_scroll: {}", app.show_notes_state.scroll_offset_vertical);
+
+    app.show_notes_state.set_dimensions(inner_area.width, inner_area.height);
+}
+
+pub fn ui<B: Backend>(f: &mut Frame, app: &App) {
+    // === Layout Definitions ===
+
+    let layout = compute_layout(f.size());
+
+    let player_chunk = layout.player_chunk;
+    // let content_chunk = layout.content_chunk;
+    let hint_chunk = layout.hint_chunk;
+
+    let podcasts_chunk = layout.podcasts_chunk;
+    let episodes_chunk = layout.episodes_chunk;
+    let show_notes_chunk = layout.show_notes_chunk;
 
     // === Define Styles ===
     let default_style = Style::default().fg(Color::White);
