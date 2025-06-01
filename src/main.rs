@@ -1,7 +1,7 @@
 use chrono::Utc;
 use rustero::app::{self, App};
 use rustero::commands::command_interpreters::PodcastPipelineInterpreter;
-use rustero::commands::podcast_algebra::{CommandAccumulator, PipelineData};
+use rustero::commands::podcast_algebra::{CommandAccumulator, PipelineData, run_commands};
 use rustero::commands::podcast_commands::PodcastCmd;
 use rustero::podcast::{Episode, EpisodeID, Podcast, PodcastURL};
 use rustero::podcast_download::{FeedFetcher, HttpFeedFetcher};
@@ -53,7 +53,9 @@ async fn main() -> anyhow::Result<()> {
 
     println!("--- Running Sequence 1: Eval -> Download -> Save ---");
     let initial_acc: CommandAccumulator = Ok(PipelineData::default());
-    // let result1 = run_commands(&cmd_seq1, initial_acc, &mut interpreter).await;
+    let result1 = run_commands(&cmd_seq1, initial_acc, &mut interpreter).await;
+
+    println!("{}", result1.is_err());
 
     // Create test episodes using the proper constructor
     let test_episodes_1 = vec![

@@ -6,4 +6,5 @@ pub mod podcast_download;
 pub mod podcast_factory;
 pub mod ui;
 
-pub mod commands; // Add this line
+pub mod commands;
+pub mod widgets;

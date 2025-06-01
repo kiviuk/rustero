@@ -1,24 +1,44 @@
 use ratatui::{
-    Frame,                                   // Added Rect for inner areas if needed
-    backend::Backend,                        // Added Modifier for more styling options
-    layout::{Constraint, Direction, Layout}, // Added Wrap for Paragraphs
-    style::{Color, Modifier, Style},
+    Frame,
+    backend::Backend,                        // Added Rect for inner areas if needed
+    layout::{Constraint, Direction, Layout}, // Added Modifier for more styling options
+    style::{Color, Modifier, Style},         // Added Wrap for Paragraphs
     widgets::{Block, Borders, List, ListItem, Paragraph, Wrap},
 };
 
 use crate::app::{App, FocusedPanel};
 
-// At the top of your ui.rs or in a utility module
-// Assuming html2text is in your Cargo.toml and imported
-// use html2text; // if not already in scope
-
-fn format_description(description: Option<&str>) -> String {
+/// Formats a given description string by either processing it as HTML, plain text,
+/// or returning a default message if the description is `None`.
+///
+/// # Arguments
+///
+/// * `description` - An `Option<&str>` containing the description text.
+///   - If `Some`, the string may contain plain text or HTML.
+///   - If `None`, a default "No show notes available" message is returned.
+///
+/// # Returns
+///
+/// A `String` containing the formatted description:
+/// - If the description appears to contain HTML tags (determined by a simple heuristic),
+///   the function attempts to parse and extract plain text using the `html2text` crate.
+///   - Successfully parsed text is further processed to:
+///     - Trim trailing whitespace on each line.
+///     - Remove any empty lines.
+/// - If HTML parsing fails, the raw input string is returned as a fallback,
+///   and an error is logged to `stderr`.
+/// - If the description does not contain HTML or parsing is not required, the plain `&str`
+///   is directly converted to a `String`.
+/// - If `description` is `None`, a default string "No show notes available for this episode."
+///   is returned.
+pub fn format_description(description: Option<&str>) -> String {
+    const DEFAULT_TEXT_WIDTH: usize = 80;
     match description {
         Some(desc_str) => {
             // A simple heuristic: if it looks like HTML, try to convert it.
             if desc_str.contains('<') && desc_str.contains('>') && desc_str.contains("</") {
                 // Slightly better HTML check
-                match html2text::from_read(desc_str.as_bytes(), 80) {
+                match html2text::from_read(desc_str.as_bytes(), DEFAULT_TEXT_WIDTH) {
                     // 80 is example width
                     Ok(text_content) => {
                         // Process the successfully converted text
@@ -196,13 +216,7 @@ pub fn ui<B: Backend>(f: &mut Frame, app: &App) {
     let is_show_notes_focused = app.focused_panel == FocusedPanel::ShowNotes;
 
     // 1. Prepare Show Notes Text Content
-    let show_notes_text_content = if let Some(episode) = selected_episode {
-        format_description(episode.description())
-    } else if selected_podcast.is_some() {
-        "Select an episode to see its show notes.".to_string()
-    } else {
-        "Select a podcast and then an episode to see show notes.".to_string()
-    };
+    let show_notes_text_content = app.show_notes_state.content.clone();
 
     // 2. Prepare the Dynamic Panel Title
     let show_notes_panel_title_string: String = match selected_podcast {
@@ -234,7 +248,8 @@ pub fn ui<B: Backend>(f: &mut Frame, app: &App) {
     let show_notes_widget = Paragraph::new(show_notes_text_content)
         .wrap(Wrap { trim: true })
         .style(default_style) // Assuming default_style for the text
-        .block(show_notes_block);
+        .block(show_notes_block)
+        .scroll((app.show_notes_state.scroll_offset_vertical, 0));
 
     // 5. Render
     f.render_widget(show_notes_widget, show_notes_chunk);
