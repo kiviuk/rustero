@@ -1,13 +1,15 @@
+use crate::opml::opml_parser::OpmlFeedEntry;
 use crate::podcast::PodcastURL;
 
 // This enum represents one "layer" of our command structure,
 // including the 'next' command.
 #[derive(Debug, Clone)]
 pub enum PodcastCmd {
-    EvalUrl(PodcastURL, Box<PodcastCmd>), // Example: String is some input URL to evaluate
+    EvalUrl(PodcastURL, Box<PodcastCmd>),
     Download(PodcastURL, Box<PodcastCmd>),
-    Save(Box<PodcastCmd>), // Implicitly saves data from the accumulator
-    End,                   // Represents the termination of a command sequence
+    Save(Box<PodcastCmd>),
+    ProcessOpmlEntries(Vec<OpmlFeedEntry>, Box<PodcastCmd>),
+    End,
 }
 
 impl PodcastCmd {
@@ -26,6 +28,10 @@ impl PodcastCmd {
 
     pub fn save(next: PodcastCmd) -> Self {
         PodcastCmd::Save(Box::new(next))
+    }
+
+    pub fn process_opml_entries(entries: Vec<OpmlFeedEntry>, next: PodcastCmd) -> Self {
+        PodcastCmd::ProcessOpmlEntries(entries, Box::new(next))
     }
 
     pub fn end() -> Self {

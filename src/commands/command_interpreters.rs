@@ -1,10 +1,12 @@
-// src/podcast_pipeline_interpreter.rs
+use crate::commands::interpreter_helpers::{
+    ValidationStepResult, try_validate_via_head, try_validate_via_partial_get,
+    validate_url_syntax_and_scheme,
+};
 use crate::commands::podcast_algebra::{CommandAccumulator, PodcastAlgebra};
 use crate::errors::PipelineError;
 use crate::podcast::PodcastURL;
 use crate::podcast_download::{FeedFetcher, download_and_create_podcast};
 use async_trait::async_trait;
-use reqwest::Url;
 use std::sync::Arc;
 
 pub struct PodcastPipelineInterpreter {
@@ -19,6 +21,14 @@ impl PodcastPipelineInterpreter {
 
 #[async_trait]
 impl PodcastAlgebra for PodcastPipelineInterpreter {
+    async fn interpret_import_podcast(
+        &mut self,
+        location_to_eval: &str,
+        current_acc: CommandAccumulator,
+    ) -> CommandAccumulator {
+        todo!()
+    }
+
     async fn interpret_eval_url(
         &mut self,
         url_to_eval: &PodcastURL,
@@ -26,94 +36,52 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
     ) -> CommandAccumulator {
         let Ok(mut pipeline_data) = current_acc else {
             return current_acc;
-        }; // Propagate error
-
-        let url_str = url_to_eval.as_str();
-
-        println!("Interpreter: Evaluating URL (efficiently): '{}'", url_str);
-
-        // Step 1: Basic URL parsing
-        let parsed_url = match Url::parse(url_str) {
-            Ok(url) => url,
-            Err(_) => {
-                return Err(PipelineError::EvaluationFailed(format!(
-                    "Invalid URL format: {}",
-                    url_str
-                )));
-            }
         };
+        let url_str = url_to_eval.as_str();
+        println!("Interpreter: Evaluating URL: '{}'", url_str);
 
-        // Step 2: Check scheme (http/https)
-        if parsed_url.scheme() != "http" && parsed_url.scheme() != "https" {
-            return Err(PipelineError::EvaluationFailed(format!(
-                "Invalid URL scheme: {}. Only http/https supported",
-                parsed_url.scheme()
-            )));
+        if let Err(e) = validate_url_syntax_and_scheme(url_str).await {
+            return Err(e);
         }
 
-        // Step 3: Attempt to fetch headers to verify content type
-        match self.fetcher.fetch_headers(url_str).await {
-            Ok(headers) => {
-                if let Some(content_type) = headers.get("content-type") {
-                    let ct_lower = content_type.to_lowercase();
-                    if ct_lower.contains("application/rss+xml")
-                        || ct_lower.contains("application/atom+xml")
-                        || ct_lower.contains("application/xml")
-                        || ct_lower.contains("text/xml")
-                    {
-                        println!("Interpreter: URL validated by Content-Type: {}", content_type);
-                        pipeline_data.last_evaluated_url = Some(url_to_eval.clone());
-                        pipeline_data.current_podcast = None;
-                        return Ok(pipeline_data); // Early return SUCCESS
-                    } else {
-                        println!(
-                            "Interpreter: Content-Type '{}' doesn't suggest RSS/Atom. Will try partial fetch.",
-                            content_type
-                        );
-                    }
-                } else {
-                    println!("Interpreter: No Content-Type header found. Will try partial fetch.");
-                }
+        // Call helper for HEAD validation
+        match try_validate_via_head(self.fetcher.as_ref(), url_str).await {
+            Ok(ValidationStepResult::Validated) => {
+                pipeline_data.last_evaluated_url = Some(url_to_eval.clone());
+                pipeline_data.current_podcast = None;
+                return Ok(pipeline_data);
             }
-            Err(e) => {
+            Ok(ValidationStepResult::Inconclusive) => {
                 println!(
-                    "Interpreter: HEAD request failed for {}: {}. Will try partial fetch.",
-                    url_str, e
+                    "Interpreter: HEAD validation inconclusive for {}. Proceeding to partial GET.",
+                    url_str
                 );
-                // Don't return an error yet, partial fetch is the fallback
+            }
+            Err(head_downloader_error) => {
+                println!(
+                    "Interpreter: HEAD request for {} failed ({}). Proceeding to partial GET as fallback.",
+                    url_str, head_downloader_error
+                );
             }
         }
 
-        // 4. Fallback to partial GET request. This is the final validation attempt.
-        //    The result of this match block will be the function's return value.
-        match self.fetcher.fetch_partial_content(url_str, (0, 4095)).await {
-            Ok(partial_content) => {
-                println!("Interpreter: Partial content: {}", partial_content);
-                if partial_content.to_lowercase().contains("<rss")
-                    || partial_content.to_lowercase().contains("<feed")
-                {
-                    println!("Interpreter: URL validated by partial content inspection.");
-                    pipeline_data.last_evaluated_url = Some(url_to_eval.clone());
-                    pipeline_data.current_podcast = None;
-                    Ok(pipeline_data) // SUCCESSFUL VALIDATION
-                } else {
-                    // DEFINITIVE FAILURE based on partial content
-                    Err(PipelineError::EvaluationFailed(format!(
-                        "URL content (first 4KB) of '{}' doesn't appear to be a valid RSS/Atom feed.",
-                        url_str
-                    )))
-                }
+        match try_validate_via_partial_get(self.fetcher.as_ref(), url_str).await {
+            Ok(ValidationStepResult::Validated) => {
+                pipeline_data.last_evaluated_url = Some(url_to_eval.clone());
+                pipeline_data.current_podcast = None;
+                Ok(pipeline_data)
             }
-            Err(e) => {
-                // DEFINITIVE FAILURE because fetching partial content failed.
-                // If you have a variant like EvaluationFailedWithSource { message: String, source: DownloaderError }
-                Err(PipelineError::EvaluationFailedWithSource {
-                    message: format!("Failed to fetch partial content for URL '{}'", url_str),
-                    source: e,
-                })
+            Ok(ValidationStepResult::Inconclusive) => {
+                Err(PipelineError::EvaluationFailed(format!(
+                    "URL content (first 4KB) of '{}' does not appear to be a valid RSS/Atom feed.",
+                    url_str
+                )))
             }
+            Err(partial_get_downloader_error) => Err(PipelineError::EvaluationFailed(format!(
+                "Failed to fetch partial content for URL evaluation of '{}': {}",
+                url_str, partial_get_downloader_error
+            ))),
         }
-        // No code should follow this final match expression. Its result is the function's result.
     }
 
     async fn interpret_download(

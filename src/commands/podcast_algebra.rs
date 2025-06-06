@@ -4,6 +4,7 @@ use crate::podcast::{Podcast, PodcastURL};
 
 use crate::commands::podcast_commands::PodcastCmd;
 use async_trait::async_trait;
+use crate::opml::opml_parser::OpmlFeedEntry;
 
 #[derive(Debug, Clone, Default)]
 pub struct PipelineData {
@@ -16,6 +17,7 @@ pub type CommandAccumulator = Result<PipelineData, PipelineError>;
 
 #[async_trait]
 pub trait PodcastAlgebra {
+
     async fn interpret_eval_url(
         &mut self,
         url_to_eval: &PodcastURL,
@@ -35,6 +37,12 @@ pub trait PodcastAlgebra {
         current_acc: CommandAccumulator,
     ) -> CommandAccumulator;
 
+    async fn interpret_process_opml_entries(
+        &mut self,
+        feed_entries_to_process: &[OpmlFeedEntry],
+        current_acc: CommandAccumulator,
+    ) -> CommandAccumulator;
+    
     async fn interpret_end(&mut self, final_acc: CommandAccumulator) -> CommandAccumulator;
 }
 pub async fn run_commands(
@@ -61,6 +69,12 @@ pub async fn run_commands(
                 current_acc = algebra.interpret_save(current_acc).await;
                 current_cmd_node = next_cmd;
             }
+
+            PodcastCmd::ProcessOpmlEntries(location, next_cmd) => {
+                current_acc = algebra.interpret_import_podcast(&location, current_acc).await;
+                current_cmd_node = next_cmd;
+            }
+
             PodcastCmd::End => {
                 current_acc = algebra.interpret_end(current_acc).await;
                 break; // Exit the loop
