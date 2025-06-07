@@ -1,3 +1,4 @@
+// src/opml/opml_parser.rs
 use opml::{OPML, Outline};
 use std::fs;
 use std::path::Path;
@@ -21,6 +22,7 @@ pub enum OpmlParseError {
     MissingTitle,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OpmlFeedEntry {
     pub title: String,
     pub xml_url: String, // This is typically the feed URL

@@ -7,5 +7,6 @@ pub mod podcast_factory;
 pub mod ui;
 
 pub mod commands;
+pub mod event;
 pub mod opml;
 pub mod widgets;

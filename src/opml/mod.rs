@@ -1,1 +1,2 @@
-pub(crate) mod opml_parser;
+// src/opml/mod.rs
+pub mod opml_parser;

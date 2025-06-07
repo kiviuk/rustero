@@ -1,3 +1,4 @@
+// src/ui.rs
 use crate::app::{App, FocusedPanel};
 use ratatui::{
     Frame,

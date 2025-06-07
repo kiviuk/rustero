@@ -1,3 +1,4 @@
+// src/widgets/scrollable_paragraph.rs
 use unicode_width::UnicodeWidthChar;
 
 #[derive(Debug, Default, Clone)]

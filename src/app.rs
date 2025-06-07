@@ -1,3 +1,5 @@
+// src/app.rs
+use crate::event::AppEvent;
 use crate::podcast::{Episode, Podcast, PodcastURL};
 use crate::ui::format_description;
 use crate::widgets::scrollable_paragraph::ScrollableParagraphState;
@@ -9,6 +11,8 @@ use crossterm::{
 };
 use ratatui::{Terminal, backend::Backend};
 use std::io;
+use tokio::sync::broadcast;
+use tokio::sync::broadcast::Receiver;
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)] // Added Clone, Copy for easier use
 pub enum FocusedPanel {
@@ -31,12 +35,12 @@ pub struct App {
     pub selected_episode_index: Option<usize>,
     pub playing_episode: Option<(String, String)>, // (podcast title, episode title)
     pub focused_panel: FocusedPanel,
-    //pub show_notes_scroll: u16, // Stores the vertical scroll offset (number of lines)
     pub show_notes_state: ScrollableParagraphState,
+    pub event_rx: Receiver<AppEvent>,
 }
 
 impl App {
-    pub fn new() -> App {
+    pub fn new(event_rx: Receiver<AppEvent>) -> App {
         let mut app = App {
             should_quit: false,
             podcasts: Vec::new(), // Initially empty, will be populated
@@ -45,11 +49,44 @@ impl App {
             playing_episode: None,
             focused_panel: FocusedPanel::default(), // Initialize focused panel
             show_notes_state: ScrollableParagraphState::default(),
+            event_rx,
         };
 
         app.select_initial_items();
 
         app
+    }
+
+    // =================================== Update podcasts =========================================
+
+    // Method to actually add a podcast into the App's state
+    fn add_podcast_to_state(&mut self, podcast: Podcast) {
+        let was_empty = self.podcasts.is_empty();
+        self.podcasts.push(podcast);
+        if was_empty {
+            self.select_initial_items();
+        }
+    }
+
+    // This is the crucial method that App will call in its loop to process incoming events.
+    // It should be non-blocking if called frequently in the TUI loop.
+    pub fn handle_pending_events(&mut self) {
+        match self.event_rx.try_recv() {
+            Ok(AppEvent::PodcastReadyForApp { podcast, timestamp: _ }) => {
+                // Destructure directly
+                println!("[APP] Received PodcastReadyForApp for: {}", podcast.title());
+                self.add_podcast_to_state(podcast);
+            }
+            // Ok(other_event) => { /* For now, ignore other potential events if any */ }
+            Err(broadcast::error::TryRecvError::Empty) => { /* No event, normal */ }
+            Err(broadcast::error::TryRecvError::Lagged(n)) => {
+                eprintln!("[APP] Event receiver lagged by {} messages!", n);
+            }
+            Err(broadcast::error::TryRecvError::Closed) => {
+                println!("[APP] Event channel closed.");
+                // self.should_quit = true; // Optionally quit if channel closes
+            }
+        }
     }
 
     // =================================== Update show notes =======================================
@@ -67,6 +104,7 @@ impl App {
         // CRITICAL: Update content after initial selection
         self.show_notes_state.set_content(new_content);
     }
+
 
     // ============================== Method to scroll show notes ==================================
 
