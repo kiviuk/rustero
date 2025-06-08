@@ -1,6 +1,6 @@
 // src/main.rs
 use chrono::Utc;
-use rustero::app::{self, App};
+use rustero::app::{self, App, load_podcasts_from_disk};
 use rustero::commands::podcast_algebra::{CommandAccumulator, PipelineData, run_commands};
 use rustero::commands::podcast_commands::PodcastCmd;
 use rustero::commands::podcast_pipeline_interpreter::PodcastPipelineInterpreter;
@@ -11,7 +11,6 @@ use rustero::podcast_download::{FeedFetcher, HttpFeedFetcher};
 use std::sync::Arc;
 use tokio::sync::broadcast;
 use tokio::sync::broadcast::{Receiver, Sender};
-
 const SAMPLE_SHOW_NOTES_1: &str = r#"
 <h1>Welcome to Episode 42: The Future of Rust</h1>
 
@@ -65,15 +64,26 @@ const SAMPLE_SHOW_NOTES_2: &str = r#"
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     // Channel for events
-    let (event_tx, app_event_rx): (Sender<AppEvent>, Receiver<AppEvent>) =
+    let (event_tx_main, app_event_rx): (Sender<AppEvent>, Receiver<AppEvent>) =
         broadcast::channel::<AppEvent>(32);
 
     // Create a new app instance
     let mut app = App::new(app_event_rx);
 
+
+    // 1. Load podcasts from disk first
+    let disk_podcasts = load_podcasts_from_disk(); // This function needs to be public in app.rs
+    if !disk_podcasts.is_empty() {
+        // Add loaded podcasts to the app.
+        // The add_podcast method handles duplicates and selecting the first if the app was empty.
+        for podcast in disk_podcasts {
+            app.add_podcast(podcast);
+        }
+    }
+    
     // let fetcher: Arc<dyn FeedFetcher + Send + Sync> = Arc::new(HttpFeedFetcher::new());
     // let mut interpreter = PodcastPipelineInterpreter::new(fetcher.clone(), event_tx.clone());
-    // 
+    //
     // let cmd_seq1 = PodcastCmd::eval_url_from_str(
     //     "https://feeds.zencastr.com/f/oSn1i316.rss", // URL as string for EvalUrl
     //     PodcastCmd::download(
@@ -84,11 +94,11 @@ async fn main() -> anyhow::Result<()> {
     //         PodcastCmd::save(PodcastCmd::end()),
     //     ),
     // );
-    // 
+    //
     // println!("--- Running Sequence 1: Eval -> Download -> Save ---");
     // let initial_acc: CommandAccumulator = Ok(PipelineData::default());
     // let result1 = run_commands(&cmd_seq1, initial_acc, &mut interpreter).await;
-    // 
+    //
     // println!("{}", result1.is_err());
 
     // Create test episodes using the proper constructor
@@ -158,15 +168,17 @@ async fn main() -> anyhow::Result<()> {
 
     let dummy_opml_entries = vec![
         OpmlFeedEntry {
-            title: "Test Feed 1 (Syntax)".to_string(),
-            xml_url: "http://feed.syntax.fm/rss".to_string(), // Known working feed for testing
-            html_url: Some("https://syntax.fm".to_string()),
-        },
-        OpmlFeedEntry {
-            title: "Test Feed 2 (Darknet Diaries)".to_string(),
-            xml_url: "https://feeds.darknetdiaries.com/darknet-diaries.libsyn.com/rss".to_string(),
+            title: "Developer Voices".to_string(),
+            xml_url: "https://feeds.zencastr.com/f/oSn1i316.rss".to_string(),
             html_url: None,
         },
+
+        OpmlFeedEntry {
+            title: "GOTO - The Brightest Minds in Tech".to_string(),
+            xml_url: "https://feeds.buzzsprout.com/1714721.rss".to_string(),
+            html_url: None,
+        },
+
         // Add a known failing one if you want to test error path (optional for this step)
         // OpmlFeedEntry {
         //     title: "Test Feed 3 (NonExistent)".to_string(),
@@ -175,20 +187,22 @@ async fn main() -> anyhow::Result<()> {
         // },
     ];
 
-    let cmd_process_opml: PodcastCmd = PodcastCmd::process_opml_entries(dummy_opml_entries, PodcastCmd::end());
-    let fetcher: Arc<dyn FeedFetcher + Send + Sync> = Arc::new(HttpFeedFetcher::new());
-
-    let mut interpreter: PodcastPipelineInterpreter = PodcastPipelineInterpreter::new(fetcher.clone(), event_tx.clone());
-    let initial_acc_for_opml: CommandAccumulator = Ok(PipelineData::default());
-
-    println!("--- Running OPML Entry Processing Sequence ---");
-    let opml_processing_result: CommandAccumulator =
-        run_commands(&cmd_process_opml, initial_acc_for_opml, &mut interpreter).await;
-
-    match opml_processing_result {
-        Ok(_) => println!("OPML entry processing command finished."),
-        Err(e) => eprintln!("OPML entry processing command failed: {:?}", e),
-    }
+    // let cmd_process_opml: PodcastCmd =
+    //     PodcastCmd::process_opml_entries(dummy_opml_entries, PodcastCmd::end());
+    // let fetcher: Arc<dyn FeedFetcher + Send + Sync> = Arc::new(HttpFeedFetcher::new());
+    //
+    // let mut interpreter: PodcastPipelineInterpreter =
+    //     PodcastPipelineInterpreter::new(fetcher.clone(), event_tx.clone());
+    // let initial_acc_for_opml: CommandAccumulator = Ok(PipelineData::default());
+    //
+    // println!("--- Running OPML Entry Processing Sequence ---");
+    // let opml_processing_result: CommandAccumulator =
+    //     run_commands(&cmd_process_opml, initial_acc_for_opml, &mut interpreter).await;
+    //
+    // match opml_processing_result {
+    //     Ok(_) => println!("OPML entry processing command finished."),
+    //     Err(e) => eprintln!("OPML entry processing command failed: {:?}", e),
+    // }
 
     // match result1 {
     //     Ok(data) => {
@@ -211,5 +225,6 @@ async fn main() -> anyhow::Result<()> {
     // }
     //
     // Start the UI with our initialized app
+
     app::start_ui(Some(app))
 }

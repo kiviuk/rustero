@@ -1,6 +1,6 @@
 // src/commands/interpreter_helpers.rs
 use crate::errors::{DownloaderError, PipelineError};
-use crate::podcast_download::{FeedFetcher};
+use crate::podcast_download::FeedFetcher;
 
 #[derive(Debug)]
 pub(super) enum ValidationStepResult {
