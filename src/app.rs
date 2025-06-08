@@ -2,7 +2,7 @@
 use crate::commands::podcast_pipeline_interpreter::PODCAST_DATA_DIR;
 use crate::event::AppEvent;
 use crate::podcast::{Episode, Podcast, PodcastURL};
-use crate::ui::format_description;
+use crate::terminal_ui::format_description;
 use crate::widgets::scrollable_paragraph::ScrollableParagraphState;
 use anyhow::Result;
 use crossterm::{
@@ -10,6 +10,7 @@ use crossterm::{
     execute,
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
+use ratatui::widgets::ListState;
 use ratatui::{Terminal, backend::Backend};
 use std::path::PathBuf;
 use std::{fs, io};
@@ -34,11 +35,13 @@ pub struct App {
     pub should_quit: bool,
     pub podcasts: Vec<Podcast>,
     pub selected_podcast_index: Option<usize>,
-    pub selected_episode_index: Option<usize>,
+    pub selected_episode_index: Option<usize>, // Logical selection
+    pub episodes_list_state: ListState, // UI state including selection and offset
     pub playing_episode: Option<(String, String)>, // (podcast title, episode title)
     pub focused_panel: FocusedPanel,
     pub show_notes_state: ScrollableParagraphState,
     pub event_rx: Receiver<AppEvent>,
+    event_channel_closed_reported: bool, // for the "channel closed" message
 }
 
 impl App {
@@ -48,10 +51,12 @@ impl App {
             podcasts: Vec::new(), // Initially empty, will be populated by events or initial load
             selected_podcast_index: None,
             selected_episode_index: None,
+            episodes_list_state: ListState::default(),
             playing_episode: None,
             focused_panel: FocusedPanel::default(), // Initialize focused panel
             show_notes_state: ScrollableParagraphState::default(),
             event_rx,
+            event_channel_closed_reported: false, // Initialize the flag
         };
 
         app.select_first_podcast();
@@ -71,35 +76,17 @@ impl App {
                 // println!("[APP] Received PodcastReadyForApp for: {}", podcast.title());
                 self.add_podcast(podcast);
             }
-            // Ok(other_event) => { /* For now, ignore other potential events if any */ }
             Err(broadcast::error::TryRecvError::Empty) => { /* No event, normal */ }
             Err(broadcast::error::TryRecvError::Lagged(n)) => {
                 eprintln!("[APP] Event receiver lagged by {} messages!", n);
             }
             Err(broadcast::error::TryRecvError::Closed) => {
-                println!("[APP] Event channel closed.");
-                // self.should_quit = true; // Optionally quit if channel closes
+                if !self.event_channel_closed_reported {
+                    // println!("[APP] Event channel closed (no senders currently active).");
+                    self.event_channel_closed_reported = true;
+                }
             }
         }
-    }
-
-    // ============================== Method to scroll show notes ==================================
-
-    // Methods in App now modify show_notes_state directly
-    // These are called by on_key when ShowNotes is focused
-    pub fn scroll_show_notes_up_action(&mut self) {
-        // Renamed to avoid conflict if methods added to state struct
-        self.show_notes_state.scroll_up(1);
-    }
-    pub fn scroll_show_notes_down_action(&mut self) {
-        // self.show_notes_state.calculate_max_scroll(show_notes_chunk_height)
-        self.show_notes_state.scroll_down(1);
-    }
-    pub fn page_up_show_notes_action(&mut self) {
-        self.show_notes_state.scroll_up(5); // Or a calculated page size
-    }
-    pub fn page_down_show_notes_action(&mut self) {
-        self.show_notes_state.scroll_down(5); // Or a calculated page size
     }
 
     // ================================= Method to add a podcast ==================================
@@ -116,7 +103,6 @@ impl App {
 
         let was_empty = self.podcasts.is_empty();
         self.podcasts.push(podcast);
-
         if was_empty {
             // Select the first podcast and its first episode
             // This will also call update_show_notes_content
@@ -135,18 +121,22 @@ impl App {
             if let Some(first_podcast) = self.podcasts.first() {
                 if !first_podcast.episodes().is_empty() {
                     self.selected_episode_index = Some(0);
+                    self.episodes_list_state.select(Some(0));
                 } else {
                     self.selected_episode_index = None;
+                    self.episodes_list_state.select(None);
                 }
             }
         } else {
             // No podcasts, so no selection
             self.selected_podcast_index = None;
             self.selected_episode_index = None;
+            self.episodes_list_state.select(None);
         }
-        // Set initial focus if not already default, already default, but could be explicit
+        // When the list of podcasts changes or is initialized,
+        // reset the episode list's scroll offset.
+        *self.episodes_list_state.offset_mut() = 0;
         self.focused_panel = FocusedPanel::Podcasts;
-        // CRITICAL: Update content after initial selection
         self.update_show_notes_content();
     }
 
@@ -161,7 +151,6 @@ impl App {
         } else {
             "Select a podcast and then an episode to see show notes.".to_string()
         };
-        // CRITICAL: Update content after initial selection
         self.show_notes_state.set_content(new_content);
     }
 
@@ -185,20 +174,36 @@ impl App {
     // ========================== Scrolling within the focused panel list ==========================
     pub fn select_next_podcast(&mut self) {
         if self.podcasts.is_empty() {
-            self.selected_podcast_index = None; // Clear selection if empty
+            // Clear selection if empty
+            self.selected_podcast_index = None;
             self.selected_episode_index = None;
-            // CRITICAL: Update content after initial selection
+            self.episodes_list_state.select(None); // Reset ListState selection
+            *self.episodes_list_state.offset_mut() = 0; // Reset offset
             self.update_show_notes_content(); // Update show notes (will show placeholder)
             return;
         }
-        let new_index = self.selected_podcast_index.map_or(0, |i| (i + 1) % self.podcasts.len());
-        self.selected_podcast_index = Some(new_index);
-        self.selected_episode_index = None; // Reset episode selection for new podcast
 
-        // Auto-select first episode of the newly selected podcast
+        let max_index: usize = self.podcasts.len() - 1;
+        let new_idx: usize = match self.selected_podcast_index {
+            Some(i) => {
+                if i < max_index {
+                    i + 1
+                } else {
+                    i
+                }
+            }
+            None => 0, // If nothing selected, select the first
+        };
+        self.selected_podcast_index = Some(new_idx);
+        self.selected_episode_index = None; // Reset episode selection for new podcast
+        self.episodes_list_state.select(None);
+        *self.episodes_list_state.offset_mut() = 0; // Reset offset for new episode list
+
+        // Auto-select the first episode of the newly selected podcast
         if let Some(podcast) = self.selected_podcast() {
             if !podcast.episodes().is_empty() {
                 self.selected_episode_index = Some(0);
+                self.episodes_list_state.select(Some(0));
             }
         }
         self.update_show_notes_content(); // Update content and reset scroll for new podcast/episode
@@ -206,19 +211,34 @@ impl App {
 
     pub fn select_prev_podcast(&mut self) {
         if self.podcasts.is_empty() {
+            // Clear selection if empty
             self.selected_podcast_index = None;
             self.selected_episode_index = None;
-            self.update_show_notes_content();
+            self.episodes_list_state.select(None); // Reset ListState selection
+            *self.episodes_list_state.offset_mut() = 0; // Reset offset
+            self.update_show_notes_content(); // Update show notes (will show placeholder)
             return;
         }
-        let len = self.podcasts.len();
-        let new_index = self.selected_podcast_index.map_or(len - 1, |i| (i + len - 1) % len);
-        self.selected_podcast_index = Some(new_index);
+        let new_idx: usize = match self.selected_podcast_index {
+            Some(i) => {
+                if i > 0 {
+                    i - 1
+                } else {
+                    i
+                }
+            }
+            None => 0, // If nothing selected, select the first
+        };
+
+        self.selected_podcast_index = Some(new_idx);
         self.selected_episode_index = None;
+        self.episodes_list_state.select(None);
+        *self.episodes_list_state.offset_mut() = 0; // Reset offset for new episode list
 
         if let Some(podcast) = self.selected_podcast() {
             if !podcast.episodes().is_empty() {
                 self.selected_episode_index = Some(0);
+                self.episodes_list_state.select(Some(0));
             }
         }
         self.update_show_notes_content();
@@ -227,41 +247,65 @@ impl App {
     // ==================================== Scrolling EPISODEs =====================================
     pub fn select_next_episode(&mut self) {
         if let Some(podcast) = self.selected_podcast() {
-            let episodes = podcast.episodes();
+            let episodes: &[Episode] = podcast.episodes();
             if episodes.is_empty() {
                 self.selected_episode_index = None;
+                self.episodes_list_state.select(None);
                 self.update_show_notes_content(); // Update to "no episodes" message
                 return;
             }
-            let new_index = self.selected_episode_index.map_or(0, |i| (i + 1) % episodes.len());
-            self.selected_episode_index = Some(new_index);
-            self.update_show_notes_content(); // Update content and reset scroll for new episode
+
+            let max_index: usize = episodes.len() - 1;
+            let new_idx: usize = match self.episodes_list_state.selected() {
+                Some(current_idx) => {
+                    if current_idx < max_index {
+                        current_idx + 1
+                    } else {
+                        current_idx
+                    }
+                }
+                None => 0, // If nothing selected, select the first
+            };
+
+            self.selected_episode_index = Some(new_idx);
+            self.episodes_list_state.select(Some(new_idx));
+            self.update_show_notes_content();
         } else {
             // No podcast selected, ensure episode index is None
-            if self.selected_episode_index.is_some() {
-                self.selected_episode_index = None;
-                self.update_show_notes_content();
-            }
+            self.selected_episode_index = None;
+            self.episodes_list_state.select(None);
+            self.update_show_notes_content();
         }
     }
 
     pub fn select_prev_episode(&mut self) {
         if let Some(podcast) = self.selected_podcast() {
-            let episodes = podcast.episodes();
+            let episodes: &[Episode] = podcast.episodes();
             if episodes.is_empty() {
                 self.selected_episode_index = None;
+                self.episodes_list_state.select(None);
                 self.update_show_notes_content();
                 return;
             }
-            let len = episodes.len();
-            let new_index = self.selected_episode_index.map_or(len - 1, |i| (i + len - 1) % len);
-            self.selected_episode_index = Some(new_index);
+
+            let new_idx: usize = match self.episodes_list_state.selected() {
+                Some(current_idx) => {
+                    if current_idx > 0 {
+                        current_idx - 1
+                    } else {
+                        current_idx
+                    }
+                }
+                None => 0, // If nothing selected, select the first
+            };
+            self.selected_episode_index = Some(new_idx);
+            self.episodes_list_state.select(Some(new_idx));
             self.update_show_notes_content();
         } else {
-            if self.selected_episode_index.is_some() {
-                self.selected_episode_index = None;
-                self.update_show_notes_content();
-            }
+            // No podcast selected, clear episode selection
+            self.selected_episode_index = None;
+            self.episodes_list_state.select(None);
+            self.update_show_notes_content();
         }
     }
 
@@ -279,6 +323,26 @@ impl App {
             FocusedPanel::Episodes => self.select_prev_episode(),
             FocusedPanel::ShowNotes => { /* ... */ }
         }
+    }
+
+
+    // ============================== Method to scroll show notes ==================================
+
+    // Methods in App now modify show_notes_state directly
+    // These are called by on_key when ShowNotes is focused
+    pub fn scroll_show_notes_up_action(&mut self) {
+        // Renamed to avoid conflict if methods added to state struct
+        self.show_notes_state.scroll_up(1);
+    }
+    pub fn scroll_show_notes_down_action(&mut self) {
+        // self.show_notes_state.calculate_max_scroll(show_notes_chunk_height)
+        self.show_notes_state.scroll_down(1);
+    }
+    pub fn page_up_show_notes_action(&mut self) {
+        self.show_notes_state.scroll_up(5); // Or a calculated page size
+    }
+    pub fn page_down_show_notes_action(&mut self) {
+        self.show_notes_state.scroll_down(5); // Or a calculated page size
     }
 
     // --- Key Handler ---
@@ -345,6 +409,11 @@ impl App {
 
 // This function will be responsible for loading podcasts from disk at startup.
 // For now, it's a placeholder.
+// The load_podcasts_from_disk function loads all podcasts at once. For large podcast libraries, consider:
+//
+//     Loading podcasts lazily
+//     Adding pagination
+//     Implementing a search/filter functionality
 pub fn load_podcasts_from_disk() -> Vec<Podcast> {
     let mut loaded_podcasts = Vec::new();
     let data_dir = PathBuf::from(PODCAST_DATA_DIR); // Use the same constant
@@ -402,39 +471,35 @@ pub fn start_ui(initial_app: Option<App>) -> Result<()> {
         App::new(event_rx)
     });
 
-    let res = run_app_loop(&mut terminal, &mut app);
+    run_app_loop(&mut terminal, &mut app)?;
 
     // Restore the terminal
     disable_raw_mode()?;
     execute!(terminal.backend_mut(), LeaveAlternateScreen, DisableMouseCapture)?;
     terminal.show_cursor()?;
 
-    if let Err(e) = res {
-        eprintln!("Error: {}", e);
-    }
-
     Ok(())
 }
 
 pub fn run_app_loop<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> Result<()> {
     while !app.should_quit {
-
         // 1. Handle any pending application events (e.g., new podcast downloaded)
         app.handle_pending_events(); // This will call app.add_podcast if an event is received
 
         // 2. Prepare layout dependent state (like show notes scroll dimensions)
         let frame_size = terminal.get_frame().size(); // Fetch once before drawing
-        crate::ui::prepare_ui_layout(app, frame_size);
+        crate::terminal_ui::prepare_ui_layout(app, frame_size);
 
         // 3. Draw the UI
-        terminal.draw(|f| crate::ui::ui::<B>(f, app))?;
+        terminal.draw(|f| crate::terminal_ui::ui::<B>(f, app))?;
 
         // 4. Poll for input events with a timeout
         if event::poll(std::time::Duration::from_millis(100))? {
             // Poll with timeout
             if let Event::Key(key_event) = event::read()? {
                 // key_event not just key
-                if key_event.kind == event::KeyEventKind::Press { // Process only key presses
+                if key_event.kind == event::KeyEventKind::Press {
+                    // Process only key presses
                     app.on_key(key_event.code);
                 }
             }

@@ -70,7 +70,6 @@ async fn main() -> anyhow::Result<()> {
     // Create a new app instance
     let mut app = App::new(app_event_rx);
 
-
     // 1. Load podcasts from disk first
     let disk_podcasts = load_podcasts_from_disk(); // This function needs to be public in app.rs
     if !disk_podcasts.is_empty() {
@@ -80,7 +79,7 @@ async fn main() -> anyhow::Result<()> {
             app.add_podcast(podcast);
         }
     }
-    
+
     // let fetcher: Arc<dyn FeedFetcher + Send + Sync> = Arc::new(HttpFeedFetcher::new());
     // let mut interpreter = PodcastPipelineInterpreter::new(fetcher.clone(), event_tx.clone());
     //
@@ -172,13 +171,11 @@ async fn main() -> anyhow::Result<()> {
             xml_url: "https://feeds.zencastr.com/f/oSn1i316.rss".to_string(),
             html_url: None,
         },
-
         OpmlFeedEntry {
             title: "GOTO - The Brightest Minds in Tech".to_string(),
             xml_url: "https://feeds.buzzsprout.com/1714721.rss".to_string(),
             html_url: None,
         },
-
         // Add a known failing one if you want to test error path (optional for this step)
         // OpmlFeedEntry {
         //     title: "Test Feed 3 (NonExistent)".to_string(),

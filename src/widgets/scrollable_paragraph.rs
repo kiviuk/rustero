@@ -68,7 +68,7 @@ impl ScrollableParagraphState {
     }
 
     // You'll also need a method to set the panel_width and panel_height.
-    // This should be called from ui.rs whenever the layout chunk size for show notes is known.
+    // This should be called from terminal_ui whenever the layout chunk size for show notes is known.
     pub fn set_dimensions(&mut self, width: u16, height: u16) {
         let mut needs_scroll_recalc = false;
         if self.panel_width != width {
