@@ -7,7 +7,7 @@ use std::fmt;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PodcastURL(String);
 
-impl std::fmt::Display for PodcastURL {
+impl fmt::Display for PodcastURL {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }

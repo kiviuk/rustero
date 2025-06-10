@@ -2,7 +2,7 @@
 use crate::commands::podcast_pipeline_interpreter::PODCAST_DATA_DIR;
 use crate::event::AppEvent;
 use crate::podcast::{Episode, Podcast, PodcastURL};
-use crate::terminal_ui::format_description;
+use crate::terminal_ui::format_episode_description;
 use crate::widgets::scrollable_paragraph::ScrollableParagraphState;
 use anyhow::Result;
 use crossterm::{
@@ -36,7 +36,7 @@ pub struct App {
     pub podcasts: Vec<Podcast>,
     pub selected_podcast_index: Option<usize>,
     pub selected_episode_index: Option<usize>, // Logical selection
-    pub episodes_list_state: ListState, // UI state including selection and offset
+    pub episodes_list_ui_state: ListState,     // UI state including selection and offset
     pub playing_episode: Option<(String, String)>, // (podcast title, episode title)
     pub focused_panel: FocusedPanel,
     pub show_notes_state: ScrollableParagraphState,
@@ -51,7 +51,7 @@ impl App {
             podcasts: Vec::new(), // Initially empty, will be populated by events or initial load
             selected_podcast_index: None,
             selected_episode_index: None,
-            episodes_list_state: ListState::default(),
+            episodes_list_ui_state: ListState::default(),
             playing_episode: None,
             focused_panel: FocusedPanel::default(), // Initialize focused panel
             show_notes_state: ScrollableParagraphState::default(),
@@ -112,7 +112,7 @@ impl App {
     }
 
     // ============================ Handle default podcast selection ===============================
-    // Select default/first Podcast, Episode and Show Notes
+    // Select first Podcast as default, also Episode and Show Notes
     pub fn select_first_podcast(&mut self) {
         if !self.podcasts.is_empty() {
             self.selected_podcast_index = Some(0); // Select the first podcast
@@ -121,21 +121,21 @@ impl App {
             if let Some(first_podcast) = self.podcasts.first() {
                 if !first_podcast.episodes().is_empty() {
                     self.selected_episode_index = Some(0);
-                    self.episodes_list_state.select(Some(0));
+                    self.episodes_list_ui_state.select(Some(0));
                 } else {
                     self.selected_episode_index = None;
-                    self.episodes_list_state.select(None);
+                    self.episodes_list_ui_state.select(None);
                 }
             }
         } else {
             // No podcasts, so no selection
             self.selected_podcast_index = None;
             self.selected_episode_index = None;
-            self.episodes_list_state.select(None);
+            self.episodes_list_ui_state.select(None);
         }
         // When the list of podcasts changes or is initialized,
         // reset the episode list's scroll offset.
-        *self.episodes_list_state.offset_mut() = 0;
+        *self.episodes_list_ui_state.offset_mut() = 0;
         self.focused_panel = FocusedPanel::Podcasts;
         self.update_show_notes_content();
     }
@@ -145,7 +145,7 @@ impl App {
     // It's crucial for keeping show notes up-to-date.
     fn update_show_notes_content(&mut self) {
         let new_content = if let Some(episode) = self.selected_episode() {
-            format_description(episode.description())
+            format_episode_description(episode.description())
         } else if self.selected_podcast().is_some() {
             "Select an episode to see its show notes.".to_string()
         } else {
@@ -177,8 +177,8 @@ impl App {
             // Clear selection if empty
             self.selected_podcast_index = None;
             self.selected_episode_index = None;
-            self.episodes_list_state.select(None); // Reset ListState selection
-            *self.episodes_list_state.offset_mut() = 0; // Reset offset
+            self.episodes_list_ui_state.select(None); // Reset ListState selection
+            *self.episodes_list_ui_state.offset_mut() = 0; // Reset offset
             self.update_show_notes_content(); // Update show notes (will show placeholder)
             return;
         }
@@ -196,14 +196,14 @@ impl App {
         };
         self.selected_podcast_index = Some(new_idx);
         self.selected_episode_index = None; // Reset episode selection for new podcast
-        self.episodes_list_state.select(None);
-        *self.episodes_list_state.offset_mut() = 0; // Reset offset for new episode list
+        self.episodes_list_ui_state.select(None);
+        *self.episodes_list_ui_state.offset_mut() = 0; // Reset offset for new episode list
 
         // Auto-select the first episode of the newly selected podcast
         if let Some(podcast) = self.selected_podcast() {
             if !podcast.episodes().is_empty() {
                 self.selected_episode_index = Some(0);
-                self.episodes_list_state.select(Some(0));
+                self.episodes_list_ui_state.select(Some(0));
             }
         }
         self.update_show_notes_content(); // Update content and reset scroll for new podcast/episode
@@ -214,8 +214,8 @@ impl App {
             // Clear selection if empty
             self.selected_podcast_index = None;
             self.selected_episode_index = None;
-            self.episodes_list_state.select(None); // Reset ListState selection
-            *self.episodes_list_state.offset_mut() = 0; // Reset offset
+            self.episodes_list_ui_state.select(None); // Reset ListState selection
+            *self.episodes_list_ui_state.offset_mut() = 0; // Reset offset
             self.update_show_notes_content(); // Update show notes (will show placeholder)
             return;
         }
@@ -232,13 +232,13 @@ impl App {
 
         self.selected_podcast_index = Some(new_idx);
         self.selected_episode_index = None;
-        self.episodes_list_state.select(None);
-        *self.episodes_list_state.offset_mut() = 0; // Reset offset for new episode list
+        self.episodes_list_ui_state.select(None);
+        *self.episodes_list_ui_state.offset_mut() = 0; // Reset offset for new episode list
 
         if let Some(podcast) = self.selected_podcast() {
             if !podcast.episodes().is_empty() {
                 self.selected_episode_index = Some(0);
-                self.episodes_list_state.select(Some(0));
+                self.episodes_list_ui_state.select(Some(0));
             }
         }
         self.update_show_notes_content();
@@ -250,13 +250,13 @@ impl App {
             let episodes: &[Episode] = podcast.episodes();
             if episodes.is_empty() {
                 self.selected_episode_index = None;
-                self.episodes_list_state.select(None);
+                self.episodes_list_ui_state.select(None);
                 self.update_show_notes_content(); // Update to "no episodes" message
                 return;
             }
 
             let max_index: usize = episodes.len() - 1;
-            let new_idx: usize = match self.episodes_list_state.selected() {
+            let new_idx: usize = match self.episodes_list_ui_state.selected() {
                 Some(current_idx) => {
                     if current_idx < max_index {
                         current_idx + 1
@@ -268,12 +268,12 @@ impl App {
             };
 
             self.selected_episode_index = Some(new_idx);
-            self.episodes_list_state.select(Some(new_idx));
+            self.episodes_list_ui_state.select(Some(new_idx));
             self.update_show_notes_content();
         } else {
             // No podcast selected, ensure episode index is None
             self.selected_episode_index = None;
-            self.episodes_list_state.select(None);
+            self.episodes_list_ui_state.select(None);
             self.update_show_notes_content();
         }
     }
@@ -283,12 +283,12 @@ impl App {
             let episodes: &[Episode] = podcast.episodes();
             if episodes.is_empty() {
                 self.selected_episode_index = None;
-                self.episodes_list_state.select(None);
+                self.episodes_list_ui_state.select(None);
                 self.update_show_notes_content();
                 return;
             }
 
-            let new_idx: usize = match self.episodes_list_state.selected() {
+            let new_idx: usize = match self.episodes_list_ui_state.selected() {
                 Some(current_idx) => {
                     if current_idx > 0 {
                         current_idx - 1
@@ -299,12 +299,12 @@ impl App {
                 None => 0, // If nothing selected, select the first
             };
             self.selected_episode_index = Some(new_idx);
-            self.episodes_list_state.select(Some(new_idx));
+            self.episodes_list_ui_state.select(Some(new_idx));
             self.update_show_notes_content();
         } else {
             // No podcast selected, clear episode selection
             self.selected_episode_index = None;
-            self.episodes_list_state.select(None);
+            self.episodes_list_ui_state.select(None);
             self.update_show_notes_content();
         }
     }
@@ -324,7 +324,6 @@ impl App {
             FocusedPanel::ShowNotes => { /* ... */ }
         }
     }
-
 
     // ============================== Method to scroll show notes ==================================
 

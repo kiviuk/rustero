@@ -7,9 +7,9 @@ use crate::commands::podcast_algebra::{
     CommandAccumulator, PipelineData, PodcastAlgebra, run_commands,
 };
 use crate::commands::podcast_commands::PodcastCmd;
-use crate::errors::PipelineError;
+use crate::errors::{DownloaderError, PipelineError}; // Import DownloaderError
 use crate::event::AppEvent;
-use crate::opml::opml_parser::OpmlFeedEntry;
+use crate::opml::opml_parser::{OpmlFeedEntry, parse_opml_from_file}; // Import parse_opml_from_file
 use crate::podcast::{Podcast, PodcastURL};
 use crate::podcast_download::{FeedFetcher, download_and_create_podcast};
 use async_trait::async_trait;
@@ -42,7 +42,7 @@ fn calculate_url_hash(url_str: &str) -> String {
     format!("{:x}", s.finish()) // Return as hex string
 }
 
-// Helper function to generate the podcast filename
+// Helper function to generate the podcast filename before saving to disk
 fn generate_podcast_filename(podcast_url: &PodcastURL) -> Result<String, PipelineError> {
     let url_str = podcast_url.as_str();
     let parsed_url = url::Url::parse(url_str).map_err(|parse_err| {
@@ -185,10 +185,10 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
                 });
             }
 
-            let file_path = PathBuf::from(PODCAST_DATA_DIR).join(filename);
+            let file_path: PathBuf = PathBuf::from(PODCAST_DATA_DIR).join(filename);
 
             // Serialize the podcast
-            let json_to_write = match serde_json::to_string_pretty(podcast_to_save) {
+            let json_to_write: String = match serde_json::to_string_pretty(podcast_to_save) {
                 Ok(s) => s,
                 Err(serde_err) => {
                     return Err(PipelineError::SaveFailedWithSource {
@@ -238,15 +238,48 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
             ))
         }
     }
+    
+    async fn interpret_load_opml_file(
+        &mut self,
+        file_path: &PathBuf,
+        current_acc: CommandAccumulator,
+    ) -> CommandAccumulator {
+        let Ok(mut pipeline_data): CommandAccumulator = current_acc else {
+            return current_acc;
+        };
+        println!("Interpreter: Loading OPML file from: {}", file_path.display());
 
+        let entries = parse_opml_from_file(file_path)
+            .map_err(|e| PipelineError::EvaluationFailedWithSource {
+                message: format!("Failed to parse OPML file '{}': {}", file_path.display(), e),
+                source: DownloaderError::Failed(e.to_string()), // Wrap OpmlParseError
+            })?;
+
+        println!(
+            "Interpreter: Successfully loaded {} OPML entries from {}",
+            entries.len(),
+            file_path.display()
+        );
+        pipeline_data.opml_entries = Some(entries);
+        Ok(pipeline_data)
+    }
+    
     async fn interpret_process_opml_entries(
         &mut self,
         feed_entries_to_process: &[OpmlFeedEntry],
         current_acc: CommandAccumulator,
     ) -> CommandAccumulator {
-        let data = match current_acc {
+        let mut data: PipelineData = match current_acc {
             Ok(d) => d,
-            Err(_) => return current_acc, // or just return current_acc; if you don't need 'data' in Err case
+            Err(_) => return current_acc,
+        };
+
+        let feed_entries_to_process: Vec<OpmlFeedEntry> = if let Some(acc_entries) = data.opml_entries.take() {
+            // Use entries from the accumulator and consume them
+            acc_entries
+        } else {
+            // Fallback to entries passed directly in the command (e.g., if called directly)
+            feed_entries_to_process.to_vec()
         };
 
         // This would unwrap Ok(data) or return Err(e)

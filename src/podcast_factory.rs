@@ -3,7 +3,7 @@ use crate::errors::DownloaderError;
 use crate::podcast::{Episode, EpisodeID, Podcast, PodcastURL};
 use anyhow::Result;
 use chrono::{DateTime, Utc};
-use rss::Channel;
+use rss::{Channel, Enclosure};
 
 #[derive(Debug)]
 pub struct ParsedFeed {
@@ -53,17 +53,17 @@ impl PodcastFactory {
             .items()
             .iter()
             .filter_map(|item| {
-                let id = item
+                let id: String = item
                     .guid()
                     .map(|g| g.value().to_string())
                     .or_else(|| item.link().map(String::from))?;
                 let title = item.title()?.to_string();
                 let description = item.description().map(String::from);
-                let enclosure = item.enclosure()?; // enclosure is Option<rss::Enclosure>
-                let audio_url = enclosure.url().to_string();
-                let size_in_bytes = enclosure.length().parse::<u64>().ok();
-                let duration = item.itunes_ext().and_then(|it| it.duration().map(String::from));
-                let pub_date = item
+                let enclosure: &Enclosure = item.enclosure()?; // enclosure is Option<rss::Enclosure>
+                let audio_url: String = enclosure.url().to_string();
+                let size_in_bytes: Option<u64> = enclosure.length().parse::<u64>().ok();
+                let duration: Option<String> = item.itunes_ext().and_then(|it| it.duration().map(String::from));
+                let pub_date: DateTime<Utc> = item
                     .pub_date()
                     .and_then(|s| DateTime::parse_from_rfc2822(s).ok())
                     .map(|dt| dt.with_timezone(&Utc))
@@ -103,19 +103,19 @@ impl PodcastFactory {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rss::{ChannelBuilder, ImageBuilder};
+    use rss::{ChannelBuilder, Image, ImageBuilder};
 
     #[test]
     fn test_create_podcast_from_parsed_feed() {
         // Create a minimal RSS Channel for testing
-        let factory = PodcastFactory::new()
+        let factory: PodcastFactory = PodcastFactory::new()
             .with_episode_limit(10)
             .with_sort_order(EpisodeSortOrder::NewestFirst);
 
-        let image = ImageBuilder::default().url("http://example.com/image.jpg".to_string()).build();
+        let image: Image = ImageBuilder::default().url("http://example.com/image.jpg".to_string()).build();
 
-        let url = "http://example.com/feed".to_string();
-        let channel = ChannelBuilder::default()
+        let url: String = "http://example.com/feed".to_string();
+        let channel: Channel = ChannelBuilder::default()
             .title("Test Podcast".to_string())
             .link(url.to_string())
             .description("Test Description".to_string())
@@ -123,7 +123,7 @@ mod tests {
             .build();
 
         let parsed = ParsedFeed { channel };
-        let podcast = factory.create_podcast(parsed, url).unwrap();
+        let podcast: Podcast = factory.create_podcast(parsed, url).unwrap();
 
         // Verify the basic fields are correctly mapped
         assert_eq!(podcast.title(), "Test Podcast");

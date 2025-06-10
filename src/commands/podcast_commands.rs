@@ -1,6 +1,7 @@
 // src/commands/podcast_commands.rs
 use crate::opml::opml_parser::OpmlFeedEntry;
 use crate::podcast::PodcastURL;
+use std::path::PathBuf; // Add PathBuf
 
 // This enum represents one "layer" of our command structure,
 // including the 'next' command.
@@ -9,6 +10,7 @@ pub enum PodcastCmd {
     EvalUrl(PodcastURL, Box<PodcastCmd>),
     Download(PodcastURL, Box<PodcastCmd>),
     Save(Box<PodcastCmd>),
+    LoadOpmlFile(PathBuf, Box<PodcastCmd>),
     ProcessOpmlEntries(Vec<OpmlFeedEntry>, Box<PodcastCmd>),
     End,
 }
@@ -31,6 +33,10 @@ impl PodcastCmd {
         PodcastCmd::Save(Box::new(next))
     }
 
+    pub fn load_opml_file(path: PathBuf, next: PodcastCmd) -> Self {
+        PodcastCmd::LoadOpmlFile(path, Box::new(next))
+    }
+    
     pub fn process_opml_entries(entries: Vec<OpmlFeedEntry>, next: PodcastCmd) -> Self {
         PodcastCmd::ProcessOpmlEntries(entries, Box::new(next))
     }

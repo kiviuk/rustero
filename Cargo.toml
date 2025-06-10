@@ -19,6 +19,4 @@ html2text = "0.15.0"
 unicode-width = "0.2.0"
 opml = "1.1.6"
 url = "2.5.4"
-
-
-
+clap = { version = "4.5.32", features = ["derive"] }

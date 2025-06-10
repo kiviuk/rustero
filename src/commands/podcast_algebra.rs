@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 // src/commands/podcast_cmd.rs (continued)
 use crate::errors::PipelineError;
 use crate::podcast::{Podcast, PodcastURL};
@@ -10,6 +11,7 @@ use async_trait::async_trait;
 pub struct PipelineData {
     pub last_evaluated_url: Option<PodcastURL>, // Result from EvalUrl
     pub current_podcast: Option<Podcast>,       // Result from Download
+    pub opml_entries: Option<Vec<OpmlFeedEntry>>, // New: For passing parsed OPML entries
 }
 
 // The Accumulator type that will be threaded through
@@ -35,7 +37,13 @@ pub trait PodcastAlgebra {
         // Save implicitly uses data from the accumulator
         current_acc: CommandAccumulator,
     ) -> CommandAccumulator;
-
+    // New trait method for loading OPML file
+    async fn interpret_load_opml_file(
+        &mut self,
+        file_path: &PathBuf,
+        current_acc: CommandAccumulator,
+    ) -> CommandAccumulator;
+    
     async fn interpret_process_opml_entries(
         &mut self,
         feed_entries_to_process: &[OpmlFeedEntry],
@@ -68,7 +76,10 @@ pub async fn run_commands(
                 current_acc = algebra.interpret_save(current_acc).await;
                 current_cmd_node = next_cmd;
             }
-
+            PodcastCmd::LoadOpmlFile(path, next_cmd) => {
+                current_acc = algebra.interpret_load_opml_file(path, current_acc).await;
+                current_cmd_node = next_cmd;
+            }
             PodcastCmd::ProcessOpmlEntries(location, next_cmd) => {
                 current_acc = algebra.interpret_process_opml_entries(&location, current_acc).await;
                 current_cmd_node = next_cmd;
