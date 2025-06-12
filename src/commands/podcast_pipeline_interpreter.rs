@@ -7,18 +7,22 @@ use crate::commands::podcast_algebra::{
     CommandAccumulator, PipelineData, PodcastAlgebra, run_commands,
 };
 use crate::commands::podcast_commands::PodcastCmd;
-use crate::errors::{DownloaderError, PipelineError}; // Import DownloaderError
+use crate::errors::{DownloaderError, PipelineError};
 use crate::event::AppEvent;
-use crate::opml::opml_parser::{OpmlFeedEntry, parse_opml_from_file}; // Import parse_opml_from_file
+use crate::opml::opml_parser::{OpmlFeedEntry, parse_opml_from_file};
+// Import parse_opml_from_file
 use crate::podcast::{Podcast, PodcastURL};
 use crate::podcast_download::{FeedFetcher, download_and_create_podcast};
 use async_trait::async_trait;
 use std::collections::hash_map::DefaultHasher;
 use std::fs;
 use std::hash::{Hash, Hasher};
-use std::path::PathBuf; // For constructing paths
+use std::path::PathBuf;
+// For constructing paths
 use std::sync::Arc;
 use tokio::sync::broadcast;
+use url::Url;
+
 pub struct PodcastPipelineInterpreter {
     fetcher: Arc<dyn FeedFetcher + Send + Sync>,
     event_tx: broadcast::Sender<AppEvent>,
@@ -37,27 +41,28 @@ pub const PODCAST_DATA_DIR: &str = "podcast_data";
 
 // Helper function to calculate a hash for a given string
 fn calculate_url_hash(url_str: &str) -> String {
-    let mut s = DefaultHasher::new();
+    let mut s: DefaultHasher = DefaultHasher::new();
     url_str.hash(&mut s);
     format!("{:x}", s.finish()) // Return as hex string
 }
 
 // Helper function to generate the podcast filename before saving to disk
 fn generate_podcast_filename(podcast_url: &PodcastURL) -> Result<String, PipelineError> {
-    let url_str = podcast_url.as_str();
-    let parsed_url = url::Url::parse(url_str).map_err(|parse_err| {
+    let url_str: &str = podcast_url.as_str();
+    let parsed_url: Url = Url::parse(url_str).map_err(|parse_err| {
         PipelineError::SaveFailedWithMessage(format!(
             "Invalid URL format for filename generation ('{}'): {}",
             url_str, parse_err
         ))
     })?;
 
-    let host = parsed_url.host_str().unwrap_or("unknown_host").to_string();
+    let host: String = parsed_url.host_str().unwrap_or("unknown_host").to_string();
     // Basic sanitization for host: replace characters not ideal for filenames
     // More robust sanitization might be needed depending on expected hostnames
-    let sanitized_host = host.replace(|c: char| !c.is_alphanumeric() && c != '.' && c != '-', "_");
+    let sanitized_host: String =
+        host.replace(|c: char| !c.is_alphanumeric() && c != '.' && c != '-', "_");
 
-    let url_hash = calculate_url_hash(url_str);
+    let url_hash: String = calculate_url_hash(url_str);
 
     Ok(format!("{}-{}.json", sanitized_host, url_hash))
 }
@@ -238,7 +243,7 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
             ))
         }
     }
-    
+
     async fn interpret_load_opml_file(
         &mut self,
         file_path: &PathBuf,
@@ -249,11 +254,12 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
         };
         println!("Interpreter: Loading OPML file from: {}", file_path.display());
 
-        let entries = parse_opml_from_file(file_path)
-            .map_err(|e| PipelineError::EvaluationFailedWithSource {
+        let entries: Vec<OpmlFeedEntry> = parse_opml_from_file(file_path).map_err(|e| {
+            PipelineError::EvaluationFailedWithSource {
                 message: format!("Failed to parse OPML file '{}': {}", file_path.display(), e),
                 source: DownloaderError::Failed(e.to_string()), // Wrap OpmlParseError
-            })?;
+            }
+        })?;
 
         println!(
             "Interpreter: Successfully loaded {} OPML entries from {}",
@@ -263,7 +269,7 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
         pipeline_data.opml_entries = Some(entries);
         Ok(pipeline_data)
     }
-    
+
     async fn interpret_process_opml_entries(
         &mut self,
         feed_entries_to_process: &[OpmlFeedEntry],
@@ -274,13 +280,14 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
             Err(_) => return current_acc,
         };
 
-        let feed_entries_to_process: Vec<OpmlFeedEntry> = if let Some(acc_entries) = data.opml_entries.take() {
-            // Use entries from the accumulator and consume them
-            acc_entries
-        } else {
-            // Fallback to entries passed directly in the command (e.g., if called directly)
-            feed_entries_to_process.to_vec()
-        };
+        let feed_entries_to_process: Vec<OpmlFeedEntry> =
+            if let Some(acc_entries) = data.opml_entries.take() {
+                // Use entries from the accumulator and consume them
+                acc_entries
+            } else {
+                // Fallback to entries passed directly in the command (e.g., if called directly)
+                feed_entries_to_process.to_vec()
+            };
 
         // This would unwrap Ok(data) or return Err(e)
         //let data: PipelineData = current_acc?;

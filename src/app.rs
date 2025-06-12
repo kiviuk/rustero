@@ -65,7 +65,6 @@ impl App {
     }
 
     // =================================== Update podcasts =========================================
-
     // App calls this method in its loop to process incoming events.
     // This is the crucial method that App will call in its loop to process incoming events.
     // It should be non-blocking if called frequently in the TUI loop.

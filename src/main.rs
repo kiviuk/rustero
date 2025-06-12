@@ -1,19 +1,21 @@
-use std::env::args;
 // src/main.rs
 use chrono::Utc;
-use clap::Parser; // Import Parser
+use clap::Parser;
+// Import Parser
 use rustero::app::{self, App, load_podcasts_from_disk};
 use rustero::event::AppEvent;
 use rustero::opml::opml_parser::OpmlFeedEntry;
 use rustero::podcast::{Episode, EpisodeID, Podcast, PodcastURL};
 use std::path::PathBuf;
 use tokio::sync::broadcast;
-use tokio::sync::broadcast::{Receiver, Sender}; // For file paths
-use std::sync::Arc; // For Arc<FeedFetcher>
-use rustero::podcast_download::HttpFeedFetcher;
-use rustero::commands::podcast_pipeline_interpreter::PodcastPipelineInterpreter;
+use tokio::sync::broadcast::{Receiver, Sender};
+// For file paths
 use rustero::commands::podcast_algebra::{CommandAccumulator, PipelineData, run_commands};
 use rustero::commands::podcast_commands::PodcastCmd;
+use rustero::commands::podcast_pipeline_interpreter::PodcastPipelineInterpreter;
+use std::sync::Arc;
+// For Arc<FeedFetcher>
+use rustero::podcast_download::HttpFeedFetcher;
 
 const SAMPLE_SHOW_NOTES_1: &str = r#"
 <h1>Welcome to Episode 42: The Future of Rust</h1>
@@ -79,35 +81,32 @@ struct Args {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let args = Args::parse();
-    
+    let args: Args = Args::parse();
+
     // Channel for events
     let (event_tx_main, app_event_rx): (Sender<AppEvent>, Receiver<AppEvent>) =
         broadcast::channel::<AppEvent>(32);
 
-    // Create a new app instance
-    // let mut app = App::new(app_event_rx);
-
-
-    let fetcher = Arc::new(HttpFeedFetcher::new());
-    let mut interpreter = PodcastPipelineInterpreter::new(fetcher.clone(), event_tx_main.clone());
+    let fetcher: Arc<HttpFeedFetcher> = Arc::new(HttpFeedFetcher::new());
+    let mut interpreter: PodcastPipelineInterpreter =
+        PodcastPipelineInterpreter::new(fetcher.clone(), event_tx_main.clone());
 
     // --- CLI Command Processing ---
     if let Some(opml_path) = args.import_opml_file {
         println!("--- Processing OPML import from: {} ---", opml_path.display());
 
         // Construct the command chain: Load file -> Process entries -> End
-        let cmd_import_opml = PodcastCmd::load_opml_file(
+        let cmd_import_opml: PodcastCmd = PodcastCmd::load_opml_file(
             opml_path,
             PodcastCmd::process_opml_entries(
-                // No explicit entries here, as they will come from the accumulator
                 vec![], // This vec is now a placeholder; content comes from accumulator
                 PodcastCmd::end(),
             ),
         );
 
         let initial_acc: CommandAccumulator = Ok(PipelineData::default());
-        let import_result = run_commands(&cmd_import_opml, initial_acc, &mut interpreter).await;
+        let import_result: CommandAccumulator =
+            run_commands(&cmd_import_opml, initial_acc, &mut interpreter).await;
 
         match import_result {
             Ok(_) => println!("OPML import completed successfully."),
@@ -118,8 +117,9 @@ async fn main() -> anyhow::Result<()> {
         }
 
         if args.headless {
+            // Exit if in headless mode after import
             println!("Headless import finished. Exiting.");
-            return Ok(()); // Exit if in headless mode after import
+            return Ok(());
         }
     }
 
@@ -136,7 +136,6 @@ async fn main() -> anyhow::Result<()> {
             app.add_podcast(podcast);
         }
     }
-
 
     // let fetcher: Arc<dyn FeedFetcher + Send + Sync> = Arc::new(HttpFeedFetcher::new());
     // let mut interpreter = PodcastPipelineInterpreter::new(fetcher.clone(), event_tx.clone());
@@ -223,7 +222,7 @@ async fn main() -> anyhow::Result<()> {
     );
     app.add_podcast(test_podcast2);
 
-    let dummy_opml_entries = vec![
+    let dummy_opml_entries: Vec<OpmlFeedEntry> = vec![
         OpmlFeedEntry {
             title: "Developer Voices".to_string(),
             xml_url: "https://feeds.zencastr.com/f/oSn1i316.rss".to_string(),
