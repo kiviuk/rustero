@@ -20,7 +20,7 @@ use std::hash::{Hash, Hasher};
 use std::path::PathBuf;
 // For constructing paths
 use futures::future::join_all;
-use log::{LevelFilter, debug, error, info, warn};
+use log::{LevelFilter, debug, error, info, warn, trace};
 use std::sync::Arc;
 use tokio::sync::broadcast;
 use tokio::task::JoinHandle;
@@ -96,14 +96,14 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
                 return Ok(pipeline_data);
             }
             Ok(ValidationStepResult::Inconclusive) => {
-                info!(
-                    "Interpreter: HEAD validation inconclusive for {}. Proceeding to partial GET.",
+                trace!(
+                    "Interpreter: HEAD validation inconclusive for URL {}. Proceeding to partial GET.",
                     url_str
                 );
             }
             Err(head_downloader_error) => {
-                info!(
-                    "Interpreter: HEAD request for {} failed ({}). Proceeding to partial GET as fallback.",
+                trace!(
+                    "Interpreter: HEAD request for URL {} failed ({}). Proceeding to partial GET as fallback.",
                     url_str, head_downloader_error
                 );
             }
@@ -118,12 +118,12 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
             }
             Ok(ValidationStepResult::Inconclusive) => {
                 Err(PipelineError::EvaluationFailed(format!(
-                    "URL content (first 4KB) of '{}' does not appear to be a valid RSS/Atom feed.",
+                    "Interpreter: URL content (first 4KB) of URL '{}' does not appear to be a valid RSS/Atom feed.",
                     url_str
                 )))
             }
             Err(partial_get_downloader_error) => Err(PipelineError::EvaluationFailed(format!(
-                "Failed to fetch partial content for URL evaluation of '{}': {}",
+                "Interpreter: Failed to fetch partial content for URL evaluation of URL '{}': {}",
                 url_str, partial_get_downloader_error
             ))),
         }
@@ -186,7 +186,7 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
             if let Err(io_err) = fs::create_dir_all(PODCAST_DATA_DIR) {
                 return Err(PipelineError::SaveFailedWithSource {
                     message: format!(
-                        "Failed to create podcast data directory '{}'",
+                        "Interpreter: Failed to create podcast data directory '{}'",
                         PODCAST_DATA_DIR
                     ),
                     source: Box::new(io_err),
@@ -260,7 +260,7 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
         let entries: Vec<OpmlFeedEntry> = parse_opml_from_file(file_path).map_err(|e| {
             PipelineError::EvaluationFailedWithSource {
                 message: format!("Failed to parse OPML file '{}': {}", file_path.display(), e),
-                source: DownloaderError::Failed(e.to_string()), // Wrap OpmlParseError
+                source: DownloaderError::Failed(e.to_string()),
             }
         })?;
 
@@ -356,8 +356,32 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
         Ok(data)
     }
 
-    async fn interpret_end(&mut self, final_acc: CommandAccumulator) -> CommandAccumulator {
+    /*async fn interpret_end(&mut self, final_acc: CommandAccumulator) -> CommandAccumulator {
         info!("Interpreter: Reached End. Final accumulator state: {:?}", final_acc);
         final_acc
+    }
+    */
+    async fn interpret_end(&mut self, final_acc: CommandAccumulator) -> CommandAccumulator {
+        match final_acc {
+            Ok(data) => {
+                // Check if a podcast was the result of the pipeline
+                if let Some(podcast) = &data.current_podcast {
+                    // Log only the podcast title for successful completion
+                    info!("Interpreter: Reached End. Pipeline completed successfully for podcast: '{}'.", podcast.title());
+                } else if data.opml_entries.is_some() {
+                    // Log if OPML entries were processed, but no single podcast is in the final accumulator
+                    info!("Interpreter: Reached End. OPML import pipeline completed successfully.");
+                } else {
+                    // Generic success message if no specific podcast or OPML context
+                    info!("Interpreter: Reached End. Pipeline completed successfully.");
+                }
+                Ok(data) // Pass the original data through
+            }
+            Err(e) => {
+                // If there was an error, still log the error details (which is usually desired)
+                error!("Interpreter: Reached End. Pipeline failed: {:?}", e);
+                Err(e) // Propagate the error
+            }
+        }
     }
 }

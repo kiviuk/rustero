@@ -22,7 +22,7 @@ impl RawFeedData {
     }
 }
 
-// ===== fetcher
+// ========================================== FETCHER ==========================================
 #[async_trait]
 pub trait FeedFetcher: Send + Sync {
     async fn fetch(&self, url: &str) -> Result<String, DownloaderError>;
@@ -38,14 +38,14 @@ pub trait FeedFetcher: Send + Sync {
     ) -> Result<String, DownloaderError>;
 }
 
-// ===== Live http fetcher
+// ===================================== LIVE HTTP FETCHER =====================================
 pub struct HttpFeedFetcher {
     client: Client,
 }
 
 impl HttpFeedFetcher {
     pub fn new() -> Self {
-        const APP_USER_AGENT: &str = "CasteroPodcastClient/1.0\
+        const APP_USER_AGENT: &str = "RusteroPodcastClient/1.0\
          (+https://github.com/your-project/castero-link)\
          Mozilla/5.0 (Windows NT 10.0; Win64; x64)\
           AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36";

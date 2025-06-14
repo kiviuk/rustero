@@ -1,6 +1,7 @@
 // src/commands/interpreter_helpers.rs
 use crate::errors::{DownloaderError, PipelineError};
 use crate::podcast_download::FeedFetcher;
+use log::{LevelFilter, info, warn, error, debug, trace}; // Import log macros
 
 #[derive(Debug)]
 pub(super) enum ValidationStepResult {
@@ -47,25 +48,27 @@ pub(super) async fn try_validate_via_head(
                     || ct_lower.contains("application/xml")
                     || ct_lower.contains("text/xml")
                 {
-                    println!(
-                        "Interpreter Helper (HEAD): URL validated by Content-Type: {}",
+                    trace!(
+                        "Interpreter Helper (HEAD): URL {} validated by Content-Type: {}",
+                        url_str,
                         content_type
                     );
                     Ok(ValidationStepResult::Validated)
                 } else {
-                    println!(
-                        "Interpreter Helper (HEAD): Content-Type '{}' inconclusive.",
+                    trace!(
+                        "Interpreter Helper (HEAD): URL {} Content-Type '{}' inconclusive.",
+                        url_str,
                         content_type
                     );
                     Ok(ValidationStepResult::Inconclusive)
                 }
             } else {
-                println!("Interpreter Helper (HEAD): No Content-Type header found.");
+                info!("Interpreter Helper (HEAD): URL {} No Content-Type header found.", url_str);
                 Ok(ValidationStepResult::Inconclusive)
             }
         }
         Err(e) => {
-            println!("Interpreter Helper (HEAD): Request failed for {}: {}", url_str, e);
+            error!("Interpreter Helper (HEAD): Request failed for URL {}: {}", url_str, e);
             Err(e)
         }
     }
@@ -84,15 +87,15 @@ pub(super) async fn try_validate_via_partial_get(
             if partial_content.to_lowercase().contains("<rss")
                 || partial_content.to_lowercase().contains("<feed")
             {
-                println!("Interpreter Helper (Partial GET): URL validated by content inspection.");
+                trace!("Interpreter Helper (Partial GET): URL {} validated by content inspection.", url_str);
                 Ok(ValidationStepResult::Validated)
             } else {
-                println!("Interpreter Helper (Partial GET): Content (first 4KB) inconclusive.");
+                trace!("Interpreter Helper (Partial GET): URL {} Content (first 4KB) inconclusive.", url_str);
                 Ok(ValidationStepResult::Inconclusive)
             }
         }
         Err(e) => {
-            println!("Interpreter Helper (Partial GET): Request failed for {}: {}", url_str, e);
+            error!("Interpreter Helper (Partial GET): Request failed for URL {}: {}", url_str, e);
             Err(e)
         }
     }

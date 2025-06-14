@@ -120,9 +120,9 @@ pub fn ui<B: Backend>(f: &mut Frame, app: &mut App) {
         Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD);
     let unfocused_selected_item_style: Style = Style::default().fg(Color::LightCyan); // If you want to dim selection in unfocused lists
 
-    // --- Gather data that depends on immutable borrows of `app` first ---
-
-    // Data for Player Panel
+    // ================ GATHER DATA THAT DEPENDS ON IMMUTABLE BORROWS OF `APP` FIRST ================
+    
+    // =================================== DATA FOR PLAYER PANEL ===================================
     let (player_panel_title, player_panel_text): (String, String) =
         if let Some((podcast_title, episode_title)) = &app.playing_episode {
             ("Now Playing".to_string(), format!("▶ {} - {}", podcast_title, episode_title))
@@ -130,7 +130,7 @@ pub fn ui<B: Backend>(f: &mut Frame, app: &mut App) {
             ("Not Playing".to_string(), " ".to_string())
         };
 
-    // Data for Podcasts Panel
+    // ================================== DATA FOR PODCASTS PANEL ==================================
     let is_podcasts_panel_focused: bool = app.focused_panel == FocusedPanel::Podcasts;
     let podcasts_list_items: Vec<ListItem> = app
         .podcasts
@@ -191,7 +191,7 @@ pub fn ui<B: Backend>(f: &mut Frame, app: &mut App) {
         }
     }
 
-    // Data for Show Notes Panel
+    // ================================= DATA FOR SHOW NOTES PANEL =================================
     let is_show_notes_panel_focused: bool = app.focused_panel == FocusedPanel::ShowNotes;
     let show_notes_content: String = app.show_notes_state.content.clone(); // Clone the content string
     let show_notes_title: String = {

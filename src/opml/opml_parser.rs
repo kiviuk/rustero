@@ -51,8 +51,8 @@ pub struct OpmlFeedEntry {
 ///         <outline type="rss" text="Algorithms + Data Structures = Programs"
 
 pub fn parse_opml_from_string(opml_content: &str) -> Result<Vec<OpmlFeedEntry>, OpmlParseError> {
-    let document = OPML::from_str(opml_content)?;
-    let mut feed_entries = Vec::new();
+    let document: OPML = OPML::from_str(opml_content)?;
+    let mut feed_entries: Vec<OpmlFeedEntry> = Vec::new();
 
     // `document.body` is directly `opml::Body`
     // `document.body.outlines` is `Vec<opml::Outline>`
@@ -88,7 +88,7 @@ fn process_outline_recursive(
     // Check if this outline represents a feed
     // Common indicators: type="rss" or the presence of an xml_url attribute.
     // Some OPMLs might not explicitly use type="rss" but will have xml_url for feeds.
-    let is_feed = outline.r#type.as_deref().map_or(false, |t| t.eq_ignore_ascii_case("rss"))
+    let is_feed: bool = outline.r#type.as_deref().map_or(false, |t| t.eq_ignore_ascii_case("rss"))
         || outline.xml_url.is_some();
 
     if is_feed {
@@ -117,7 +117,7 @@ fn process_outline_recursive(
         }
         // At this point, final_title is a non-empty String.
 
-        let xml_url_str = outline
+        let xml_url_str: String = outline
             .xml_url
             .filter(|s| !s.is_empty()) // Ensure it's not Some("")
             .ok_or(OpmlParseError::MissingXmlUrl)?;
@@ -172,7 +172,7 @@ mod tests {
 
     #[test]
     fn test_parse_from_string_v1() {
-        let feeds = parse_opml_from_string(SAMPLE_OPML_V1).unwrap();
+        let feeds: Vec<OpmlFeedEntry> = parse_opml_from_string(SAMPLE_OPML_V1).unwrap();
         assert_eq!(feeds.len(), 3);
         assert_eq!(feeds[0].title, "Syntax FM");
         assert_eq!(feeds[0].xml_url, "http://feed.syntax.fm/rss");
@@ -183,7 +183,7 @@ mod tests {
 
     #[test]
     fn test_parse_from_string_v2() {
-        let feeds = parse_opml_from_string(SAMPLE_OPML_V2).unwrap();
+        let feeds: Vec<OpmlFeedEntry> = parse_opml_from_string(SAMPLE_OPML_V2).unwrap();
         assert_eq!(feeds.len(), 2);
         assert_eq!(feeds[0].title, "This Week in Rust");
         assert_eq!(feeds[0].xml_url, "https://this-week-in-rust.org/rss.xml");
@@ -193,7 +193,7 @@ mod tests {
 
     #[test]
     fn test_missing_xml_url_is_skipped_unless_nested_valid() {
-        let opml_missing_xml_url = r#"<?xml version="1.0" encoding="UTF-8"?>
+        let opml_missing_xml_url: &str = r#"<?xml version="1.0" encoding="UTF-8"?>
         <opml version="1.0">
             <head><title>Test</title></head>
             <body>
@@ -216,7 +216,7 @@ mod tests {
         // and handle its error inside the loop, or filter more strictly before pushing.
         // Current `process_outline_recursive` uses `?` which propagates.
 
-        let result = parse_opml_from_string(opml_missing_xml_url);
+        let _result = parse_opml_from_string(opml_missing_xml_url);
         // The outer outline will fail because it's type="rss" but has no xmlUrl.
         // The question is if the error from the outer outline prevents the inner one from being processed.
         // With the current `?` in the loop, an error in a child will propagate up and stop.
@@ -226,18 +226,18 @@ mod tests {
         // The `title` for the outer outline is "No XML URL here".
         // It has `type="rss"`. `xml_url` is None.
         // This will trigger `OpmlParseError::MissingXmlUrl`.
-        let opml_malformed_feed_entry = r#"<?xml version="1.0" encoding="UTF-8"?>
+        let opml_malformed_feed_entry: &str = r#"<?xml version="1.0" encoding="UTF-8"?>
         <opml version="1.0">
             <head><title>Test</title></head>
             <body>
                 <outline text="Malformed Feed" title="Malformed Feed" type="rss" htmlUrl="http://example.com" />
             </body>
         </opml>"#;
-        let result_malformed = parse_opml_from_string(opml_malformed_feed_entry);
+        let result_malformed: Result<Vec<OpmlFeedEntry>, OpmlParseError> = parse_opml_from_string(opml_malformed_feed_entry);
         assert!(matches!(result_malformed, Err(OpmlParseError::MissingXmlUrl)));
 
         // Test that even if an outer folder doesn't have feed attributes, inner ones are found
-        let opml_folder_no_type = r#"<?xml version="1.0" encoding="UTF-8"?>
+        let opml_folder_no_type: &str = r#"<?xml version="1.0" encoding="UTF-8"?>
         <opml version="1.0">
             <head><title>Test</title></head>
             <body>
@@ -246,7 +246,7 @@ mod tests {
                 </outline>
             </body>
         </opml>"#;
-        let feeds = parse_opml_from_string(opml_folder_no_type).unwrap();
+        let feeds: Vec<OpmlFeedEntry> = parse_opml_from_string(opml_folder_no_type).unwrap();
         assert_eq!(feeds.len(), 1);
         assert_eq!(feeds[0].title, "Feed In Folder");
     }
