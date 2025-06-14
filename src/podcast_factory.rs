@@ -62,7 +62,8 @@ impl PodcastFactory {
                 let enclosure: &Enclosure = item.enclosure()?; // enclosure is Option<rss::Enclosure>
                 let audio_url: String = enclosure.url().to_string();
                 let size_in_bytes: Option<u64> = enclosure.length().parse::<u64>().ok();
-                let duration: Option<String> = item.itunes_ext().and_then(|it| it.duration().map(String::from));
+                let duration: Option<String> =
+                    item.itunes_ext().and_then(|it| it.duration().map(String::from));
                 let pub_date: DateTime<Utc> = item
                     .pub_date()
                     .and_then(|s| DateTime::parse_from_rfc2822(s).ok())
@@ -112,7 +113,8 @@ mod tests {
             .with_episode_limit(10)
             .with_sort_order(EpisodeSortOrder::NewestFirst);
 
-        let image: Image = ImageBuilder::default().url("http://example.com/image.jpg".to_string()).build();
+        let image: Image =
+            ImageBuilder::default().url("http://example.com/image.jpg".to_string()).build();
 
         let url: String = "http://example.com/feed".to_string();
         let channel: Channel = ChannelBuilder::default()

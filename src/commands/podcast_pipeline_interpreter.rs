@@ -19,9 +19,12 @@ use std::fs;
 use std::hash::{Hash, Hasher};
 use std::path::PathBuf;
 // For constructing paths
+use futures::future::join_all;
+use log::{LevelFilter, debug, error, info, warn};
 use std::sync::Arc;
 use tokio::sync::broadcast;
-use url::Url;
+use tokio::task::JoinHandle;
+use url::Url; // Import log macros
 
 pub struct PodcastPipelineInterpreter {
     fetcher: Arc<dyn FeedFetcher + Send + Sync>,
@@ -78,7 +81,7 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
             return current_acc;
         };
         let url_str: &str = url_to_eval.as_str();
-        println!("Interpreter: Evaluating URL: '{}'", url_str);
+        info!("Interpreter: Evaluating URL: '{}'", url_str);
 
         // Basic validation by URL syntax and scheme
         if let Err(e) = validate_url_syntax_and_scheme(url_str).await {
@@ -93,13 +96,13 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
                 return Ok(pipeline_data);
             }
             Ok(ValidationStepResult::Inconclusive) => {
-                println!(
+                info!(
                     "Interpreter: HEAD validation inconclusive for {}. Proceeding to partial GET.",
                     url_str
                 );
             }
             Err(head_downloader_error) => {
-                println!(
+                info!(
                     "Interpreter: HEAD request for {} failed ({}). Proceeding to partial GET as fallback.",
                     url_str, head_downloader_error
                 );
@@ -138,11 +141,11 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
         // Strategy: Use evaluated URL if available, otherwise use the one from the Download command.
         let url_to_use: &PodcastURL = match &pipeline_data.last_evaluated_url {
             Some(eval_url) => {
-                println!("Interpreter: Using evaluated URL for download: {}", eval_url.as_str());
+                info!("Interpreter: Using evaluated URL for download: {}", eval_url.as_str());
                 eval_url
             }
             None => {
-                println!(
+                info!(
                     "Interpreter: No evaluated URL in context, using URL from Download command: {}",
                     explicit_url_from_command.as_str()
                 );
@@ -150,13 +153,13 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
             }
         };
 
-        println!("Interpreter: Attempting download from: {}...", url_to_use.as_str());
+        info!("Interpreter: Attempting download from: {}...", url_to_use.as_str());
 
         // The '?' handles the Result and early returns Err(DownloaderError) if needed
         let podcast_obj: Podcast =
             download_and_create_podcast(url_to_use, self.fetcher.as_ref()).await?;
 
-        println!("Interpreter: Successfully downloaded '{}'.", podcast_obj.title());
+        info!("Interpreter: Successfully downloaded '{}'.", podcast_obj.title());
         pipeline_data.current_podcast = Some(podcast_obj);
         pipeline_data.last_evaluated_url = None; // "Consume" the evaluated URL
         Ok(pipeline_data)
@@ -168,7 +171,7 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
         }; // Propagate error
 
         if let Some(podcast_to_save) = &data.current_podcast {
-            println!(
+            info!(
                 "Interpreter: Saving podcast (from accumulator): '{}'...",
                 podcast_to_save.title()
             );
@@ -206,7 +209,7 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
             // Write to the specific file
             match fs::write(&file_path, json_to_write) {
                 Ok(_) => {
-                    println!(
+                    info!(
                         "Interpreter: Podcast '{}' saved to '{}'.",
                         podcast_to_save.title(),
                         file_path.display()
@@ -220,7 +223,7 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
                         podcast: podcast_to_save.clone(), // Clone the podcast data for the event
                         timestamp: chrono::Utc::now(),
                     }) {
-                        eprintln!("Failed to send PodcastReadyForApp event after save: {}", e);
+                        error!("Failed to send PodcastReadyForApp event after save: {}", e);
                         // Decide how to handle this error; for now, just log it.
                         // It might mean the app's receiver is gone.
                     }
@@ -237,7 +240,7 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
                 }),
             }
         } else {
-            eprintln!("Interpreter: Save command executed, but no podcast in accumulator to save.");
+            error!("Interpreter: Save command executed, but no podcast in accumulator to save.");
             Err(PipelineError::InvalidState(
                 "Save called without a podcast in accumulator".to_string(),
             ))
@@ -252,7 +255,7 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
         let Ok(mut pipeline_data): CommandAccumulator = current_acc else {
             return current_acc;
         };
-        println!("Interpreter: Loading OPML file from: {}", file_path.display());
+        info!("Interpreter: Loading OPML file from: {}", file_path.display());
 
         let entries: Vec<OpmlFeedEntry> = parse_opml_from_file(file_path).map_err(|e| {
             PipelineError::EvaluationFailedWithSource {
@@ -261,7 +264,7 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
             }
         })?;
 
-        println!(
+        info!(
             "Interpreter: Successfully loaded {} OPML entries from {}",
             entries.len(),
             file_path.display()
@@ -293,16 +296,18 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
         //let data: PipelineData = current_acc?;
 
         if feed_entries_to_process.is_empty() {
-            println!("Interpreter: No OPML feed entries to process.");
+            info!("Interpreter: No OPML feed entries to process.");
             return Ok(data); // Nothing to do, success for this step
         }
 
-        println!(
-            "Interpreter: Processing {} OPML feed entries sequentially...",
+        info!(
+            "Interpreter: Processing {} OPML feed entries concurrently...",
             feed_entries_to_process.len()
         );
 
-        for entry in feed_entries_to_process.iter() {
+        let mut tasks: Vec<JoinHandle<bool>> = Vec::new();
+
+        for entry in feed_entries_to_process.into_iter() {
             let podcast_url_from_opml: PodcastURL = PodcastURL::new(&entry.xml_url);
             let command_sequence_for_entry: PodcastCmd = PodcastCmd::eval_url(
                 podcast_url_from_opml.clone(),
@@ -312,28 +317,47 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
                 ),
             );
 
-            let mut sub_interpreter: PodcastPipelineInterpreter =
-                PodcastPipelineInterpreter::new(self.fetcher.clone(), self.event_tx.clone());
-            let initial_sub_acc: CommandAccumulator = Ok(PipelineData::default());
+            let sub_fetcher: Arc<dyn FeedFetcher + Send + Sync> = self.fetcher.clone();
+            let sub_event_tx: broadcast::Sender<AppEvent> = self.event_tx.clone();
 
-            let sub_result: CommandAccumulator =
-                run_commands(&command_sequence_for_entry, initial_sub_acc, &mut sub_interpreter)
-                    .await;
+            let entry_title_for_logging: String = entry.title.clone();
+            let entry_url_for_logging: String = entry.xml_url.clone();
+            tasks.push(tokio::spawn(async move {
+                let mut sub_interpreter: PodcastPipelineInterpreter =
+                    PodcastPipelineInterpreter::new(sub_fetcher, sub_event_tx);
+                let initial_sub_acc: CommandAccumulator = Ok(PipelineData::default());
 
-            if sub_result.is_err() {
-                eprintln!(
-                    "[OPML Processor] Sub-pipeline for {} failed: {:?}",
-                    entry.title,
-                    sub_result.unwrap_err()
-                );
-            }
+                let sub_result: CommandAccumulator = run_commands(
+                    &command_sequence_for_entry,
+                    initial_sub_acc,
+                    &mut sub_interpreter,
+                )
+                .await;
+
+                if sub_result.is_err() {
+                    error!(
+                        "[OPML Processor] Sub-pipeline for {} (URL: {}) failed: {:?}",
+                        entry_title_for_logging,
+                        entry_url_for_logging,
+                        sub_result.unwrap_err()
+                    );
+                    false
+                } else {
+                    info!(
+                        "[OPML Processor] Sub-pipeline for {} (URL: {}) succeeded.",
+                        entry_title_for_logging, entry_url_for_logging
+                    );
+                    true
+                }
+            }));
         }
 
+        join_all(tasks).await;
         Ok(data)
     }
 
     async fn interpret_end(&mut self, final_acc: CommandAccumulator) -> CommandAccumulator {
-        println!("Interpreter: Reached End. Final accumulator state: {:?}", final_acc);
+        info!("Interpreter: Reached End. Final accumulator state: {:?}", final_acc);
         final_acc
     }
 }

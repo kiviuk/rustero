@@ -5,9 +5,10 @@ use crate::podcast_factory::{ParsedFeed, PodcastFactory};
 use anyhow::Result;
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
-use reqwest::Response;
+use log::{LevelFilter, debug, error, info, warn};
+use reqwest::{Client, Response};
 use rss::Channel;
-use std::collections::HashMap;
+use std::collections::HashMap; // Import log macros
 
 #[derive(Debug, Clone)]
 pub struct RawFeedData {
@@ -39,19 +40,30 @@ pub trait FeedFetcher: Send + Sync {
 
 // ===== Live http fetcher
 pub struct HttpFeedFetcher {
-    client: reqwest::Client,
+    client: Client,
 }
 
 impl HttpFeedFetcher {
     pub fn new() -> Self {
-        Self { client: reqwest::Client::new() }
+        const APP_USER_AGENT: &str = "CasteroPodcastClient/1.0\
+         (+https://github.com/your-project/castero-link)\
+         Mozilla/5.0 (Windows NT 10.0; Win64; x64)\
+          AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36";
+
+        let client: Client = reqwest::Client::builder()
+            .user_agent(APP_USER_AGENT)
+            .timeout(std::time::Duration::from_secs(10))
+            .build()
+            .expect("Failed to create request client.");
+
+        Self { client }
     }
 }
 
 #[async_trait]
 impl FeedFetcher for HttpFeedFetcher {
     async fn fetch(&self, url: &str) -> Result<String, DownloaderError> {
-        println!("HttpFeedFetcher: fetching {}", url);
+        info!("HttpFeedFetcher: fetching {}", url);
         Ok(self
             .client
             .get(url)
@@ -64,6 +76,7 @@ impl FeedFetcher for HttpFeedFetcher {
     }
 
     async fn fetch_headers(&self, url: &str) -> Result<HashMap<String, String>, DownloaderError> {
+        debug!("HttpFeedFetcher: fetching HEAD for {}", url);
         let response: Response =
             self.client.head(url).send().await.map_err(DownloaderError::NetworkError)?;
         if !response.status().is_success() {
@@ -86,7 +99,8 @@ impl FeedFetcher for HttpFeedFetcher {
         url: &str,
         byte_range: (u64, u64),
     ) -> Result<String, DownloaderError> {
-        let response = self
+        debug!("HttpFeedFetcher: fetching partial content for {}", url);
+        let response: Response = self
             .client
             .get(url)
             .header("Range", format!("bytes={}-{}", byte_range.0, byte_range.1))
@@ -152,9 +166,9 @@ pub async fn download_and_create_podcast(
     url: &PodcastURL,
     fetcher: &(dyn FeedFetcher + Send + Sync),
 ) -> Result<Podcast, DownloaderError> {
-    println!("download_and_create_podcast: Fetching content for URL: {}", url.as_str());
+    info!("download_and_create_podcast: Fetching content for URL: {}", url.as_str());
     let content: String = fetcher.fetch(url.as_str()).await?;
-    println!("download_and_create_podcast: Content fetched, length: {}", content.len());
+    info!("download_and_create_podcast: Content fetched, length: {}", content.len());
     let channel: Channel = Channel::read_from(content.as_bytes())?;
     let parsed = ParsedFeed { channel };
 
@@ -202,7 +216,7 @@ mod tests {
 
         let podcast: Podcast = download_and_create_podcast(&url, &fetcher).await.unwrap();
 
-        println!("Downloaded podcast: {:#?}", podcast);
+        info!("Downloaded podcast: {:#?}", podcast);
 
         // Basic sanity checks
         assert_eq!(podcast.title(), "Developer Voices");

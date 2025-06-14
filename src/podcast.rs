@@ -8,7 +8,7 @@ use std::fmt;
 pub struct PodcastURL(String);
 
 impl fmt::Display for PodcastURL {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)
     }
 }
@@ -16,8 +16,8 @@ impl fmt::Display for PodcastURL {
 impl PartialEq for PodcastURL {
     fn eq(&self, other: &Self) -> bool {
         // Normalize URLs by trimming trailing slashes
-        let a = self.0.trim_end_matches('/');
-        let b = other.0.trim_end_matches('/');
+        let a: &str = self.0.trim_end_matches('/');
+        let b: &str = other.0.trim_end_matches('/');
         a == b
     }
 }
@@ -45,8 +45,8 @@ impl AsRef<str> for PodcastURL {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EpisodeID(String);
 
-impl std::fmt::Display for EpisodeID {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for EpisodeID {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)
     }
 }

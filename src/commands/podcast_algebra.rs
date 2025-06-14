@@ -43,7 +43,7 @@ pub trait PodcastAlgebra {
         file_path: &PathBuf,
         current_acc: CommandAccumulator,
     ) -> CommandAccumulator;
-    
+
     async fn interpret_process_opml_entries(
         &mut self,
         feed_entries_to_process: &[OpmlFeedEntry],
@@ -57,8 +57,8 @@ pub async fn run_commands(
     initial_accumulator: CommandAccumulator,
     algebra: &mut impl PodcastAlgebra,
 ) -> CommandAccumulator {
-    let mut current_acc = initial_accumulator;
-    let mut current_cmd_node = command;
+    let mut current_acc: CommandAccumulator = initial_accumulator;
+    let mut current_cmd_node: &PodcastCmd = command;
 
     loop {
         // Algebra methods are responsible for checking current_acc.is_err()

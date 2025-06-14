@@ -11,12 +11,16 @@ anyhow = "1.0.79"
 serde = { version = "1.0.219", features = ["derive"] }       # For serialization
 chrono = { version = "0.4.41", features = ["serde"] }       # For datetime handling
 reqwest = { version = "0.12.18", features = ["blocking"] }  # For HTTP requests
-async-trait = "0.1"
-tokio = { version = "1.0", features = ["full"] }
+async-trait = "0.1.88"
+tokio = { version = "1.45.1", features = ["full"] }
 thiserror = "2.0.12"
 serde_json = "1.0.140"
-html2text = "0.15.0"
-unicode-width = "0.2.0"
+html2text = "0.15.1"
+unicode-width = "0.2.1"
 opml = "1.1.6"
 url = "2.5.4"
-clap = { version = "4.5.32", features = ["derive"] }
+clap = { version = "4.5.40", features = ["derive"] }
+futures = "0.3.31"
+log = "0.4.27"
+env_logger = "0.11.8"
+fern = "0.7.1"

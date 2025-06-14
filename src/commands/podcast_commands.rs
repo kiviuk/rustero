@@ -36,7 +36,7 @@ impl PodcastCmd {
     pub fn load_opml_file(path: PathBuf, next: PodcastCmd) -> Self {
         PodcastCmd::LoadOpmlFile(path, Box::new(next))
     }
-    
+
     pub fn process_opml_entries(entries: Vec<OpmlFeedEntry>, next: PodcastCmd) -> Self {
         PodcastCmd::ProcessOpmlEntries(entries, Box::new(next))
     }

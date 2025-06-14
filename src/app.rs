@@ -10,8 +10,12 @@ use crossterm::{
     execute,
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
+use log::{LevelFilter, debug, error, info, trace, warn};
+use ratatui::backend::CrosstermBackend;
+use ratatui::layout::Rect;
 use ratatui::widgets::ListState;
 use ratatui::{Terminal, backend::Backend};
+use std::io::Stdout;
 use std::path::PathBuf;
 use std::{fs, io};
 use tokio::sync::broadcast;
@@ -72,16 +76,16 @@ impl App {
         match self.event_rx.try_recv() {
             Ok(AppEvent::PodcastReadyForApp { podcast, timestamp: _ }) => {
                 // Destructure directly
-                // println!("[APP] Received PodcastReadyForApp for: {}", podcast.title());
+                trace!("[APP] Received PodcastReadyForApp for: {}", podcast.title());
                 self.add_podcast(podcast);
             }
             Err(broadcast::error::TryRecvError::Empty) => { /* No event, normal */ }
             Err(broadcast::error::TryRecvError::Lagged(n)) => {
-                eprintln!("[APP] Event receiver lagged by {} messages!", n);
+                trace!("[APP] Event receiver lagged by {} messages!", n);
             }
             Err(broadcast::error::TryRecvError::Closed) => {
                 if !self.event_channel_closed_reported {
-                    // println!("[APP] Event channel closed (no senders currently active).");
+                    trace!("[APP] Event channel closed (no senders currently active).");
                     self.event_channel_closed_reported = true;
                 }
             }
@@ -94,13 +98,13 @@ impl App {
     pub fn add_podcast(&mut self, podcast: Podcast) {
         // Prevent adding duplicate podcasts based on URL (optional, but good practice)
         if self.podcasts.iter().any(|p| p.url() == podcast.url()) {
-            println!("[APP] Podcast {} already exists. Skipping add.", podcast.title());
+            info!("[APP] Podcast {} already exists. Skipping add.", podcast.title());
             // Optionally, you might want to update the existing one if the new one is fresher.
             // For now, we just skip.
             return;
         }
 
-        let was_empty = self.podcasts.is_empty();
+        let was_empty: bool = self.podcasts.is_empty();
         self.podcasts.push(podcast);
         if was_empty {
             // Select the first podcast and its first episode
@@ -143,7 +147,7 @@ impl App {
     // This method is called when selection changes or app starts.
     // It's crucial for keeping show notes up-to-date.
     fn update_show_notes_content(&mut self) {
-        let new_content = if let Some(episode) = self.selected_episode() {
+        let new_content: String = if let Some(episode) = self.selected_episode() {
             format_episode_description(episode.description())
         } else if self.selected_podcast().is_some() {
             "Select an episode to see its show notes.".to_string()
@@ -391,7 +395,7 @@ impl App {
 
     pub fn load_test_podcast(&mut self) {
         // Create a test podcast with some episodes
-        let test_podcast = Podcast::new(
+        let test_podcast: Podcast = Podcast::new(
             PodcastURL::new("http://example.com/feed"),
             "Test Podcast".to_string(),
             Some("A test podcast".to_string()),
@@ -413,8 +417,8 @@ impl App {
 //     Adding pagination
 //     Implementing a search/filter functionality
 pub fn load_podcasts_from_disk() -> Vec<Podcast> {
-    let mut loaded_podcasts = Vec::new();
-    let data_dir = PathBuf::from(PODCAST_DATA_DIR); // Use the same constant
+    let mut loaded_podcasts: Vec<Podcast> = Vec::new();
+    let data_dir: PathBuf = PathBuf::from(PODCAST_DATA_DIR); // Use the same constant
 
     // Load podcasts from disk, if any
     // TODO: Collect errors and display them in the TUI (e.g., a startup error message or a log panel).
@@ -429,22 +433,22 @@ pub fn load_podcasts_from_disk() -> Vec<Podcast> {
                             if let Ok(json_content) = fs::read_to_string(&path) {
                                 match serde_json::from_str::<Podcast>(&json_content) {
                                     Ok(podcast) => {
-                                        println!("[APP Load] Loaded podcast: {}", podcast.title());
+                                        info!("[APP Load] Loaded podcast: {}", podcast.title());
                                         loaded_podcasts.push(podcast);
                                     }
-                                    Err(e) => eprintln!(
+                                    Err(e) => error!(
                                         "[APP Load] Failed to deserialize podcast from {:?}: {}",
                                         path, e
                                     ),
                                 }
                             } else {
-                                eprintln!("[APP Load] Failed to read file {:?}", path);
+                                error!("[APP Load] Failed to read file {:?}", path);
                             }
                         }
                     }
                 }
             }
-            Err(e) => eprintln!("[APP Load] Failed to read podcast data directory: {}", e),
+            Err(e) => error!("[APP Load] Failed to read podcast data directory: {}", e),
         }
     }
     // Sort podcasts by title, for example, for consistent ordering
@@ -455,15 +459,15 @@ pub fn load_podcasts_from_disk() -> Vec<Podcast> {
 pub fn start_ui(initial_app: Option<App>) -> Result<()> {
     // Set up the terminal
     enable_raw_mode()?;
-    let mut stdout = io::stdout();
+    let mut stdout: Stdout = io::stdout();
     execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
-    let backend = ratatui::backend::CrosstermBackend::new(stdout);
-    let mut terminal = Terminal::new(backend)?;
+    let backend: CrosstermBackend<Stdout> = CrosstermBackend::new(stdout);
+    let mut terminal: Terminal<CrosstermBackend<Stdout>> = Terminal::new(backend)?;
 
     // If no app is provided (e.g., if start_ui was called from somewhere else without pre-configuration),
     // create a new, default/empty one.
     // main.rs is now expected to always pass Some(app) where 'app' is fully initialized.
-    let mut app = initial_app.unwrap_or_else(|| {
+    let mut app: App = initial_app.unwrap_or_else(|| {
         println!("[Warning] start_ui called with None; creating a default empty App instance.");
         let (_tx, event_rx) = broadcast::channel::<AppEvent>(32);
         App::new(event_rx)
@@ -485,7 +489,7 @@ pub fn run_app_loop<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> Re
         app.handle_pending_events(); // This will call app.add_podcast if an event is received
 
         // 2. Prepare layout dependent state (like show notes scroll dimensions)
-        let frame_size = terminal.get_frame().size(); // Fetch once before drawing
+        let frame_size: Rect = terminal.get_frame().size(); // Fetch once before drawing
         crate::terminal_ui::prepare_ui_layout(app, frame_size);
 
         // 3. Draw the UI

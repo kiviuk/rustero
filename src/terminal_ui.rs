@@ -1,13 +1,14 @@
 use std::rc::Rc;
 // src/terminal_ui
 use crate::app::{App, FocusedPanel};
+use log::{LevelFilter, debug, error, info, warn};
 use ratatui::{
     Frame,
     backend::Backend,
     layout::{Constraint, Direction, Layout, Rect}, // Added Rect for inner areas if needed
     style::{Color, Modifier, Style},               // Added Modifier for more styling options
     widgets::{Block, Borders, List, ListItem, Paragraph, Wrap}, // Added Wrap for Paragraphs
-};
+}; // Import log macros
 
 pub fn format_episode_description(description: Option<&str>) -> String {
     // The trim() is redundant here as the to_string() will already trim whitespace.
@@ -32,7 +33,7 @@ pub fn format_episode_description(description: Option<&str>) -> String {
                     Err(_e) => {
                         // If html2text fails, fallback to rendering the original string
                         // You might want to log the error _e here for debugging
-                        eprintln!("Failed to parse HTML description with html2text: {}", _e);
+                        error!("Failed to parse HTML description with html2text: {}", _e);
                         desc_str.to_string() // Fallback
                     }
                 }
@@ -195,8 +196,10 @@ pub fn ui<B: Backend>(f: &mut Frame, app: &mut App) {
     let show_notes_content: String = app.show_notes_state.content.clone(); // Clone the content string
     let show_notes_title: String = {
         // Use a block to scope borrows for title construction
-        let current_podcast_title: Option<String> = app.selected_podcast().map(|p| p.title().to_string());
-        let current_episode_title: Option<String> = app.selected_episode().map(|e| e.title().to_string());
+        let current_podcast_title: Option<String> =
+            app.selected_podcast().map(|p| p.title().to_string());
+        let current_episode_title: Option<String> =
+            app.selected_episode().map(|e| e.title().to_string());
         match (current_podcast_title, current_episode_title) {
             (Some(p_title), Some(e_title)) => format!("Show Notes: {} - {}", p_title, e_title),
             (Some(p_title), None) => format!("Show Notes for '{}' (Select an episode)", p_title),
@@ -204,12 +207,13 @@ pub fn ui<B: Backend>(f: &mut Frame, app: &mut App) {
         }
     };
     // =================================== Player Panel ============================================
-    let player_widget: Paragraph = Paragraph::new(player_panel_text).wrap(Wrap { trim: true }).block(
-        Block::default()
-            .title(player_panel_title)
-            .borders(Borders::ALL)
-            .style(Style::default().fg(Color::Green)),
-    );
+    let player_widget: Paragraph =
+        Paragraph::new(player_panel_text).wrap(Wrap { trim: true }).block(
+            Block::default()
+                .title(player_panel_title)
+                .borders(Borders::ALL)
+                .style(Style::default().fg(Color::Green)),
+        );
     f.render_widget(player_widget, layout_chunks.player_chunk);
 
     // ================================== Podcasts Panel (Left) ====================================
@@ -250,7 +254,8 @@ pub fn ui<B: Backend>(f: &mut Frame, app: &mut App) {
 
     // =============================== Hint Bar Panel (Bottom) =====================================
     // You can make this dynamic later if keybindings change based on context
-    let hint_text: &str = "[←/→/Tab] Switch Panel | [↑/↓] Navigate List | [Space] Play/Pause | [Q] Quit";
+    let hint_text: &str =
+        "[←/→/Tab] Switch Panel | [↑/↓] Navigate List | [Space] Play/Pause | [Q] Quit";
     let hint_widget: Paragraph = Paragraph::new(hint_text)
         .style(Style::default().fg(Color::DarkGray)) // Subtle color for hints
         .alignment(ratatui::layout::Alignment::Center); // Optional: center the text
