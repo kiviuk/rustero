@@ -1,7 +1,7 @@
 // src/commands/interpreter_helpers.rs
 use crate::errors::{DownloaderError, PipelineError};
 use crate::podcast_download::FeedFetcher;
-use log::{LevelFilter, info, warn, error, debug, trace}; // Import log macros
+use log::{info, warn, error, debug, trace}; // Import log macros
 
 #[derive(Debug)]
 pub(super) enum ValidationStepResult {

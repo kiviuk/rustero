@@ -10,3 +10,5 @@ pub mod commands;
 pub mod event;
 pub mod opml;
 pub mod widgets;
+
+pub mod player;

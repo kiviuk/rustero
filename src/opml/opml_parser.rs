@@ -138,7 +138,6 @@ fn process_outline_recursive(
     Ok(())
 }
 
-// Example Usage (you can put this in main.rs or tests)
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -356,11 +356,6 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
         Ok(data)
     }
 
-    /*async fn interpret_end(&mut self, final_acc: CommandAccumulator) -> CommandAccumulator {
-        info!("Interpreter: Reached End. Final accumulator state: {:?}", final_acc);
-        final_acc
-    }
-    */
     async fn interpret_end(&mut self, final_acc: CommandAccumulator) -> CommandAccumulator {
         match final_acc {
             Ok(data) => {

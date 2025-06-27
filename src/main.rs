@@ -1,27 +1,22 @@
 // src/main.rs
-use chrono::Utc;
+use anyhow::anyhow;
 use clap::Parser;
-// Import Parser
 use rustero::app::{self, App, load_podcasts_from_disk};
-use rustero::event::AppEvent;
-use rustero::podcast::{Episode, EpisodeID, Podcast, PodcastURL};
-use std::path::PathBuf;
-use tokio::sync::broadcast;
-use tokio::sync::broadcast::{Receiver, Sender};
-// For file paths
-use rustero::commands::podcast_algebra::{CommandAccumulator, PipelineData, run_commands};
+use rustero::commands::podcast_algebra::{run_commands, PipelineData};
 use rustero::commands::podcast_commands::PodcastCmd;
 use rustero::commands::podcast_pipeline_interpreter::PodcastPipelineInterpreter;
-use std::sync::Arc;
-// For Arc<FeedFetcher>
+use rustero::event::AppEvent;
+use rustero::player::{AudioPlayer, PlayerCommand, PlayerEvent};
 use rustero::podcast_download::HttpFeedFetcher;
-// Logging
-use anyhow::anyhow;
-use log::{LevelFilter, debug, error, info, warn}; // Import log macros // For error handling
+use log::{error, info, LevelFilter};
+use std::path::PathBuf;
+use std::sync::Arc;
+use tokio::sync::broadcast::{self, Receiver, Sender};
+use tokio::sync::mpsc;
+// --- ADDED: The tool to solve the blocking problem ---
+use tokio::task;
 
-// This function now *always* configures file logging
 fn setup_logger() -> anyhow::Result<()> {
-    // Removed is_headless parameter
     let log_file_path = "castero.log";
     fern::Dispatch::new()
         .format(|out, message, record| {
@@ -33,33 +28,20 @@ fn setup_logger() -> anyhow::Result<()> {
                 message
             ))
         })
-        .level(LevelFilter::Info) // Default level for all modes
-        // Suppress verbose logs from external crates that you don't control
+        .level(LevelFilter::Info)
         .level_for("reqwest", LevelFilter::Warn)
         .level_for("hyper", LevelFilter::Warn)
-        .level_for("h2", LevelFilter::Warn) // Often verbose with HTTP/2
-        // Output to a file
         .chain(fern::log_file(log_file_path)?)
-        // Optionally, also output errors to stderr (can be useful even in TUI, but might still conflict)
-        // .chain(
-        //     fern::Dispatch::new()
-        //         .level(LevelFilter::Error) // Only errors go to stderr
-        //         .chain(std::io::stderr())
-        // )
         .apply()?;
-
-    info!("Logging all output to file: {}", log_file_path); // This message will go to the file.
-    // On initial run, you might see it briefly before TUI takes over.
+    info!("Logging all output to file: {}", log_file_path);
     Ok(())
 }
+
 #[derive(Parser, Debug)]
 #[command(author, version, about = "A TUI podcast client.", long_about = None)]
 struct Args {
-    /// Path to an OPML file to import podcasts from.
     #[arg(long, value_name = "FILE")]
     import_opml_file: Option<PathBuf>,
-
-    /// Run in headless mode (no TUI) for operations like import.
     #[arg(long)]
     headless: bool,
 }
@@ -67,61 +49,74 @@ struct Args {
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let args: Args = Args::parse();
-
     setup_logger()?;
 
-    // Channel for events
     let (event_tx_main, app_event_rx): (Sender<AppEvent>, Receiver<AppEvent>) =
         broadcast::channel::<AppEvent>(32);
 
-    // --- CLI Command Processing (if --import-opml-file is present) ---
+    let (player_cmd_tx, player_cmd_rx) = mpsc::channel::<PlayerCommand>(100);
+    let (player_event_tx, player_event_rx) = broadcast::channel::<PlayerEvent>(100);
+
+    // AudioPlayer is created here, on the main tokio thread. It is NOT Send.
+    let mut player = AudioPlayer::new(player_cmd_rx, player_event_tx)
+        .expect("Failed to create AudioPlayer");
+
     if let Some(opml_path) = args.import_opml_file {
         info!("--- Processing OPML import from: {} ---", opml_path.display());
-
-        // Construct the command chain: Load file -> Process entries -> End
-        let cmd_import_opml: PodcastCmd = PodcastCmd::load_opml_file(
+        let cmd_import_opml = PodcastCmd::load_opml_file(
             opml_path,
-            PodcastCmd::process_opml_entries(
-                vec![], // This vec is now a placeholder; content comes from accumulator
-                PodcastCmd::end(),
-            ),
+            PodcastCmd::process_opml_entries(vec![], PodcastCmd::end()),
         );
 
-        let fetcher: Arc<HttpFeedFetcher> = Arc::new(HttpFeedFetcher::new());
-        let mut interpreter: PodcastPipelineInterpreter =
+        let fetcher = Arc::new(HttpFeedFetcher::new());
+        let mut interpreter =
             PodcastPipelineInterpreter::new(fetcher.clone(), event_tx_main.clone());
 
-        let initial_acc: CommandAccumulator = Ok(PipelineData::default());
-        let import_result: CommandAccumulator =
-            run_commands(&cmd_import_opml, initial_acc, &mut interpreter).await;
+        let initial_acc = Ok(PipelineData::default());
+        let import_result = run_commands(&cmd_import_opml, initial_acc, &mut interpreter).await;
 
-        match import_result {
-            Ok(_) => info!("OPML import completed successfully."),
-            Err(e) => {
-                error!("Error: OPML import failed. Check log for details: {}", e);
-                return Err(anyhow!(e));
-            }
+        if let Err(e) = import_result {
+            error!("Error: OPML import failed: {}", e);
+            return Err(anyhow!(e));
         }
 
         if args.headless {
-            // Exit if in headless mode after import
             info!("Headless import finished. Exiting.");
             return Ok(());
         }
     }
 
-    // =================================== TUI APPLICATION START ====================================
-    let mut app: App = App::new(app_event_rx);
+    // The App struct IS Send, so it can be moved to the blocking thread.
+    let mut app: App = App::new(app_event_rx, player_cmd_tx, player_event_rx);
+    let disk_podcasts = load_podcasts_from_disk();
+    for podcast in disk_podcasts {
+        app.add_podcast(podcast);
+    }
+    
+    info!("Starting player and UI tasks...");
 
-    // 1. Load podcasts from disk first
-    let disk_podcasts: Vec<Podcast> = load_podcasts_from_disk(); // This function needs to be public in app.rs
-    if !disk_podcasts.is_empty() {
-        // Add loaded podcasts to the app.
-        // The add_podcast method handles duplicates and selecting the first if the app was empty.
-        for podcast in disk_podcasts {
-            app.add_podcast(podcast);
-        }
+    // --- THIS IS THE CORRECT ARCHITECTURE ---
+    // The player runs on the async runtime.
+    let player_task = player.run();
+    // The entire blocking UI runs on a dedicated thread from Tokio's pool.
+    let ui_task = task::spawn_blocking(move || app::start_ui(app));
+
+    tokio::select! {
+        player_result = player_task => {
+            if let Err(e) = player_result {
+                error!("Player task exited with error: {}", e);
+            } else {
+                info!("Player task finished.");
+            }
+        },
+        ui_result = ui_task => {
+            match ui_result {
+                Ok(Ok(_)) => info!("UI exited gracefully."),
+                Ok(Err(e)) => error!("UI exited with an error: {}", e),
+                Err(e) => error!("UI task panicked: {}", e),
+            }
+        },
     }
 
-    app::start_ui(Some(app))
+    Ok(())
 }

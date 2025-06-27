@@ -5,7 +5,7 @@ use crate::podcast_factory::{ParsedFeed, PodcastFactory};
 use anyhow::Result;
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
-use log::{LevelFilter, debug, error, info, warn};
+use log::{debug, error, info, warn};
 use reqwest::{Client, Response};
 use rss::Channel;
 use std::collections::HashMap; // Import log macros
@@ -120,7 +120,7 @@ impl FeedFetcher for HttpFeedFetcher {
     }
 }
 
-// ===== Fake http fetcher for testing
+// ================================= FAKE HTTP FETCHER FOR TESTING =================================
 pub struct FakeFetcher {
     pub response: String,
 }
@@ -161,7 +161,7 @@ impl FeedFetcher for FakeFetcher {
     }
 }
 
-// Implementation of the download function
+// ============================ IMPLEMENTATION OF THE DOWNLOAD FUNCTION ============================
 pub async fn download_and_create_podcast(
     url: &PodcastURL,
     fetcher: &(dyn FeedFetcher + Send + Sync),

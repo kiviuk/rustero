@@ -1,10 +1,8 @@
-// src/commands/podcast_commands.rs
 use crate::opml::opml_parser::OpmlFeedEntry;
 use crate::podcast::PodcastURL;
-use std::path::PathBuf; // Add PathBuf
+use std::path::PathBuf;
 
-// This enum represents one "layer" of our command structure,
-// including the 'next' command.
+// This enum represents the command structure, including the 'next' command.
 #[derive(Debug, Clone)]
 pub enum PodcastCmd {
     EvalUrl(PodcastURL, Box<PodcastCmd>),
@@ -15,6 +13,7 @@ pub enum PodcastCmd {
     End,
 }
 
+// The command factory
 impl PodcastCmd {
     pub fn eval_url(url: PodcastURL, next: PodcastCmd) -> Self {
         PodcastCmd::EvalUrl(url, Box::new(next))
