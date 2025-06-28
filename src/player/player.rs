@@ -199,7 +199,8 @@ fn play_episode_on_thread(
         let sender_clone: Sender<PlayerEvent> = player_event_sender.clone();
 
         tokio::spawn(async move {
-            let mut interval: Interval = tokio::time::interval(tokio::time::Duration::from_millis(500)); // Update every 500ms
+            let ms_500: Duration = tokio::time::Duration::from_millis(500);
+            let mut interval: Interval = tokio::time::interval(ms_500);
             loop {
                 interval.tick().await;
                 if let Some(sink) = sink_clone.lock().unwrap().as_ref() {
