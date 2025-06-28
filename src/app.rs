@@ -64,7 +64,6 @@ impl App {
             episodes_list_ui_state: ListState::default(),
             focused_panel: FocusedPanel::default(),
             show_notes_state: ScrollableParagraphState::default(),
-            // --- FIX 1: Use the correct variable name ---
             event_rx: app_event_rx,
             player_command_tx,
             player_event_rx,
@@ -97,9 +96,10 @@ impl App {
     
     fn handle_player_event(&mut self, event: PlayerEvent) {
         match event {
-            PlayerEvent::Playing { podcast_title, episode_title } => {
+            PlayerEvent::Playing { podcast_title, episode_title, duration } => {
                 self.player_status = PlaybackStatus::Playing;
                 self.current_player_episode = Some((podcast_title, episode_title));
+                self.total_playback_duration = Some(duration);
             }
             PlayerEvent::Paused => self.player_status = PlaybackStatus::Paused,
             PlayerEvent::Resumed => self.player_status = PlaybackStatus::Playing,

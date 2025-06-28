@@ -3,7 +3,7 @@ use std::time::Duration;
 #[derive(Debug, Clone)]
 pub enum PlayerEvent {
     /// Emitted when an episode starts playing.
-    Playing { podcast_title: String, episode_title: String },
+    Playing { podcast_title: String, episode_title: String, duration: Duration },
     /// Emitted when playback is paused.
     Paused,
     /// Emitted when playback is resumed.
