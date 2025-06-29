@@ -1,6 +1,8 @@
 // src/app.rs
 use crate::commands::podcast_pipeline_interpreter::PODCAST_DATA_DIR;
-use crate::event::AppEvent;
+use crate::event::PipelineEvent;
+pub use crate::player::player::PlaybackStatus;
+use crate::player::{PlayerEvent, PlayerRemoteCommand};
 use crate::podcast::{Episode, Podcast};
 use crate::terminal_ui::format_episode_description;
 use crate::widgets::scrollable_paragraph::ScrollableParagraphState;
@@ -8,19 +10,17 @@ use anyhow::Result;
 use crossterm::{
     event::{self, DisableMouseCapture, Event, KeyCode, KeyEventKind},
     execute,
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+    terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
 use log::{error, info, trace, warn};
+use ratatui::Terminal;
 use ratatui::backend::{Backend, CrosstermBackend};
 use ratatui::layout::Rect;
 use ratatui::widgets::ListState;
-use ratatui::Terminal;
 use std::io::Stdout;
 use std::time::Duration;
 use std::{fs, io};
 use tokio::sync::{broadcast, mpsc};
-use crate::player::{PlayerCommand, PlayerEvent};
-pub use crate::player::player::PlaybackStatus;
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum FocusedPanel {
@@ -42,8 +42,8 @@ pub struct App {
     pub episodes_list_ui_state: ListState,
     pub focused_panel: FocusedPanel,
     pub show_notes_state: ScrollableParagraphState,
-    pub event_rx: broadcast::Receiver<AppEvent>,
-    pub player_command_tx: mpsc::Sender<PlayerCommand>,
+    pub event_rx: broadcast::Receiver<PipelineEvent>,
+    pub player_command_tx: mpsc::Sender<PlayerRemoteCommand>,
     pub player_event_rx: broadcast::Receiver<PlayerEvent>,
     pub player_status: PlaybackStatus,
     pub current_playback_progress: Duration,
@@ -53,8 +53,8 @@ pub struct App {
 
 impl App {
     pub fn new(
-        app_event_rx: broadcast::Receiver<AppEvent>,
-        player_command_tx: mpsc::Sender<PlayerCommand>,
+        app_event_rx: broadcast::Receiver<PipelineEvent>,
+        player_command_tx: mpsc::Sender<PlayerRemoteCommand>,
         player_event_rx: broadcast::Receiver<PlayerEvent>,
     ) -> App {
         let mut app = App {
@@ -79,7 +79,7 @@ impl App {
     pub fn handle_pending_events(&mut self) {
         // Non-blocking try_recv is safe in a sync loop.
         match self.event_rx.try_recv() {
-            Ok(AppEvent::PodcastReadyForApp { podcast, .. }) => {
+            Ok(PipelineEvent::PodcastReadyForApp { podcast, .. }) => {
                 trace!("[APP] Received PodcastReadyForApp for: {}", podcast.title());
                 self.add_podcast(podcast);
             }
@@ -93,7 +93,7 @@ impl App {
             Err(e) => warn!("[APP] Player event receiver error: {:?}", e),
         }
     }
-    
+
     fn handle_player_event(&mut self, event: PlayerEvent) {
         match event {
             PlayerEvent::Playing { podcast_title, episode_title, duration } => {
@@ -121,7 +121,7 @@ impl App {
             }
         }
     }
-    
+
     pub fn add_podcast(&mut self, podcast: Podcast) {
         if self.podcasts.iter().any(|p| p.url() == podcast.url()) {
             info!("[APP] Podcast {} already exists. Skipping.", podcast.title());
@@ -180,7 +180,9 @@ impl App {
     }
 
     pub fn select_next_podcast(&mut self) {
-        if self.podcasts.is_empty() { return; }
+        if self.podcasts.is_empty() {
+            return;
+        }
         let max_index = self.podcasts.len() - 1;
         let new_idx = self.selected_podcast_index.map_or(0, |i| (i + 1).min(max_index));
         self.selected_podcast_index = Some(new_idx);
@@ -190,7 +192,9 @@ impl App {
     }
 
     pub fn select_prev_podcast(&mut self) {
-        if self.podcasts.is_empty() { return; }
+        if self.podcasts.is_empty() {
+            return;
+        }
         let new_idx = self.selected_podcast_index.map_or(0, |i| i.saturating_sub(1));
         self.selected_podcast_index = Some(new_idx);
         self.episodes_list_ui_state.select(Some(0));
@@ -200,7 +204,9 @@ impl App {
 
     pub fn select_next_episode(&mut self) {
         if let Some(podcast) = self.selected_podcast() {
-            if podcast.episodes().is_empty() { return; }
+            if podcast.episodes().is_empty() {
+                return;
+            }
             let max_index = podcast.episodes().len() - 1;
             let current_index = self.episodes_list_ui_state.selected().unwrap_or(0);
             let new_index = (current_index + 1).min(max_index);
@@ -211,7 +217,9 @@ impl App {
 
     pub fn select_prev_episode(&mut self) {
         if let Some(podcast) = self.selected_podcast() {
-            if podcast.episodes().is_empty() { return; }
+            if podcast.episodes().is_empty() {
+                return;
+            }
             let current_index = self.episodes_list_ui_state.selected().unwrap_or(0);
             let new_index = current_index.saturating_sub(1);
             self.episodes_list_ui_state.select(Some(new_index));
@@ -238,7 +246,7 @@ impl App {
             }
             _ => {}
         }
-        
+
         match self.focused_panel {
             FocusedPanel::Podcasts => match key {
                 KeyCode::Down | KeyCode::Char('j') => self.select_next_podcast(),
@@ -267,7 +275,7 @@ impl App {
     }
 
     // Use non-blocking try_send
-    fn send_player_command(&mut self, command: PlayerCommand) {
+    fn send_player_command(&mut self, command: PlayerRemoteCommand) {
         if self.player_command_tx.try_send(command).is_err() {
             error!("Failed to send player command: channel is full or closed.");
             self.player_status = PlaybackStatus::Error;
@@ -276,8 +284,12 @@ impl App {
 
     fn play_selected_episode_action(&mut self) {
         if let Some(episode) = self.selected_episode() {
-            info!("Sending Play command for: '{}' with URL: {}", episode.title(), episode.audio_url());
-            self.send_player_command(PlayerCommand::PlayEpisode { episode: episode.clone() });
+            info!(
+                "Sending Play command for: '{}' with URL: {}",
+                episode.title(),
+                episode.audio_url()
+            );
+            self.send_player_command(PlayerRemoteCommand::PlayEpisode { episode: episode.clone() });
         } else {
             warn!("Play action triggered, but no episode is selected.");
         }
@@ -285,7 +297,7 @@ impl App {
 
     fn toggle_play_pause_action(&mut self) {
         info!("Sending TogglePlayPause command");
-        self.send_player_command(PlayerCommand::TogglePlayPause);
+        self.send_player_command(PlayerRemoteCommand::TogglePlayPause);
     }
 
     pub fn selected_podcast(&self) -> Option<&Podcast> {
@@ -293,12 +305,9 @@ impl App {
     }
 
     pub fn selected_episode(&self) -> Option<&Episode> {
-        self.episodes_list_ui_state
-            .selected()
-            .and_then(|selected_index| {
-                self.selected_podcast()
-                    .and_then(|podcast| podcast.episodes().get(selected_index))
-            })
+        self.episodes_list_ui_state.selected().and_then(|selected_index| {
+            self.selected_podcast().and_then(|podcast| podcast.episodes().get(selected_index))
+        })
     }
 }
 
@@ -317,19 +326,18 @@ pub fn load_podcasts_from_disk() -> Vec<Podcast> {
             }
         }
     }
-    // --- FIX 2: Correct typo ---
     loaded_podcasts.sort_by(|a, b| a.title().cmp(b.title()));
     loaded_podcasts
 }
 
-// This is now synchronous
 pub fn start_ui(mut app: App) -> Result<()> {
     enable_raw_mode()?;
     let mut stdout: Stdout = io::stdout();
     execute!(stdout, EnterAlternateScreen, DisableMouseCapture)?;
-    let backend = CrosstermBackend::new(stdout);
-    let mut terminal = Terminal::new(backend)?;
+    let backend: CrosstermBackend<Stdout> = CrosstermBackend::new(stdout);
+    let mut terminal: Terminal<CrosstermBackend<Stdout>> = Terminal::new(backend)?;
 
+    // blocks the thread it's running on (with crossterm::event::poll).
     run_app_loop(&mut terminal, &mut app)?;
 
     disable_raw_mode()?;

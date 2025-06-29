@@ -1,0 +1,5 @@
+2025-06-28 23:26:13 [INFO] rustero - Logging all output to file: rustero.log
+2025-06-28 23:26:13 [INFO] rustero - Starting player and UI tasks...
+2025-06-28 23:26:13 [INFO] rustero::player::player - AudioPlayer command loop started.
+2025-06-28 23:26:20 [INFO] rustero::player::player - Player command channel closed. Exiting player loop.
+2025-06-28 23:26:20 [INFO] rustero - Player task finished.

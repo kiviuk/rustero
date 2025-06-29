@@ -232,7 +232,8 @@ mod tests {
                 <outline text="Malformed Feed" title="Malformed Feed" type="rss" htmlUrl="http://example.com" />
             </body>
         </opml>"#;
-        let result_malformed: Result<Vec<OpmlFeedEntry>, OpmlParseError> = parse_opml_from_string(opml_malformed_feed_entry);
+        let result_malformed: Result<Vec<OpmlFeedEntry>, OpmlParseError> =
+            parse_opml_from_string(opml_malformed_feed_entry);
         assert!(matches!(result_malformed, Err(OpmlParseError::MissingXmlUrl)));
 
         // Test that even if an outer folder doesn't have feed attributes, inner ones are found

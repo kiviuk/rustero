@@ -1,0 +1,210 @@
+{
+  "url": "https://video-api.wsj.com/podcast/rss/wsj/tech-news-briefing",
+  "title": "WSJ Tech News Briefing",
+  "description": "Tech News Briefing is your guide to what people in tech are talking about. Every weekday, we’ll bring you breaking tech news and scoops from the pros at the Wall Street Journal, insight into new innovations and policy debates, tips from our personal tech team, and exclusive interviews with movers and shakers in the industry.",
+  "image_url": "https://megaphone.imgix.net/podcasts/786a40de-9f81-11e5-8c1b-9792cea21589/image/WSJ_Podcast_Tech_News_Briefing.jpg?ixlib=rails-4.3.1&max-w=3000&max-h=3000&fit=crop&auto=format,compress",
+  "website_url": "https://www.wsj.com/podcasts/tech-news-briefing",
+  "episodes": [
+    {
+      "id": "3c529494-538f-11f0-951a-77f8ecc4144a",
+      "title": "TNB Tech Minute: Trump Halts Canada Trade Talks Over New Tax on American Tech Companies",
+      "podcast_name": "WSJ Tech News Briefing",
+      "description": "Plus: Supreme Court upholds Texas law requiring age verification for adult content online. And, New York orders local governments to report cyberattacks within 72 hours. Victoria Craig hosts.\n\nLearn more about your ad choices. Visit megaphone.fm/adchoices",
+      "published_date": "2025-06-27T19:37:00Z",
+      "duration": "149",
+      "audio_url": "https://pdst.fm/e/chrt.fm/track/1F1B1F/traffic.megaphone.fm/WSJ1408910513.mp3?updated=1751053813",
+      "size_in_bytes": 0
+    },
+    {
+      "id": "85b6d0de-5324-11f0-bd04-bfba51eb9547",
+      "title": "Nvidia’s Move Into Cloud Computing Is Making Things Awkward in Silicon Valley",
+      "podcast_name": "WSJ Tech News Briefing",
+      "description": "Nvidia looms large over the world of artificial intelligence thanks to its supply of chips – a critical component of data centers that power AI models. WSJ Heard on the Street columnist Asa Fitch explains that the chip giant’s foray into cloud computing is starting to threaten industry stalwarts. Plus, millions of resumes never make it past bots screening data for potential job candidates. WSJ reporter Lauren Weber profiles one man who has sued for discrimination. He worries an algorithm screened him out.\n\n\n\nSign up for the WSJ's free Technology newsletter.\n\nLearn more about your ad choices. Visit megaphone.fm/adchoices",
+      "published_date": "2025-06-27T07:01:00Z",
+      "duration": "785",
+      "audio_url": "https://pdst.fm/e/chrt.fm/track/1F1B1F/traffic.megaphone.fm/WSJ6978006913.mp3?updated=1751007979",
+      "size_in_bytes": 0
+    },
+    {
+      "id": "8ba65486-52bd-11f0-baa4-4b67f1ede5cd",
+      "title": "TNB Tech Minute: Apple Faces EU Deadline to Comply with App Store Concerns",
+      "podcast_name": "WSJ Tech News Briefing",
+      "description": "Plus: A longtime Elon Musk aide exits Tesla. And, Mark Zuckerberg poaches three researchers from OpenAI to join Meta’s superintelligence efforts. Victoria Craig hosts.\n\nLearn more about your ad choices. Visit megaphone.fm/adchoices",
+      "published_date": "2025-06-26T18:39:00Z",
+      "duration": "156",
+      "audio_url": "https://pdst.fm/e/chrt.fm/track/1F1B1F/traffic.megaphone.fm/WSJ3462394309.mp3?updated=1750963750",
+      "size_in_bytes": 0
+    },
+    {
+      "id": "5b23927c-525b-11f0-a742-e374a97e9079",
+      "title": "Better Batteries Could Soon Come to a Phone Near You",
+      "podcast_name": "WSJ Tech News Briefing",
+      "description": "A battery that lasts 50% longer, charges faster, and has a near-zero risk of fire…say it ain’t so! WSJ columnist and co-host of the Bold Names podcast, Christopher Mims, says it might actually come to market sooner rather than later thanks to one company’s advancements. Plus: Hackers are targeting the tech-support workers we’ve come to rely on. WSJ reporter Robert McMillan tells us about a newer strategy criminals are deploying to get access to our sensitive information. And how you can protect yourself. Victoria Craig hosts.\n\n\n\nSign up for the WSJ's free Technology newsletter.\n\nLearn more about your ad choices. Visit megaphone.fm/adchoices",
+      "published_date": "2025-06-26T07:01:00Z",
+      "duration": "713",
+      "audio_url": "https://pdst.fm/e/chrt.fm/track/1F1B1F/traffic.megaphone.fm/WSJ8801433133.mp3?updated=1750921578",
+      "size_in_bytes": 0
+    },
+    {
+      "id": "89d7156e-51f5-11f0-812e-57a351e6659e",
+      "title": "TNB Tech Minute: SpaceX Sends First Indian Astronaut to Space in 41 Years",
+      "podcast_name": "WSJ Tech News Briefing",
+      "description": "Plus: A plan to let you bet on SpaceX. And the Genius Act could spell trouble for Tether in the U.S. Victoria Craig hosts.\n\nLearn more about your ad choices. Visit megaphone.fm/adchoices",
+      "published_date": "2025-06-25T18:47:00Z",
+      "duration": "149",
+      "audio_url": "https://pdst.fm/e/chrt.fm/track/1F1B1F/traffic.megaphone.fm/WSJ5055996423.mp3?updated=1750877849",
+      "size_in_bytes": 0
+    },
+    {
+      "id": "3121a1fe-5192-11f0-991a-373e0f07b050",
+      "title": "Mark Zuckerberg Is Taking Control of AI Talent Hiring at Meta",
+      "podcast_name": "WSJ Tech News Briefing",
+      "description": "The CEO of Meta has taken the recruitment reins as he tries to address an AI crisis at his company. WSJ technology reporter Meghan Bobrowsky explains that the chief executive is armed with $100-million pay packages to lure top talent. Plus, after years of work, robots are finally able to load and unload a truck. It might seem a basic task, but WSJ reporter Esther Fung tells us why it’s the holy grail of tech innovation.\n\n\n\nSign up for the WSJ's free Technology newsletter.\n\nLearn more about your ad choices. Visit megaphone.fm/adchoices",
+      "published_date": "2025-06-25T07:01:00Z",
+      "duration": "704",
+      "audio_url": "https://pdst.fm/e/chrt.fm/track/1F1B1F/traffic.megaphone.fm/WSJ8652543143.mp3?updated=1750835180",
+      "size_in_bytes": 0
+    },
+    {
+      "id": "5dc1fcb2-5134-11f0-86fa-1be44771df24",
+      "title": "TNB Tech Minute: Amazon Expands Prime Services to Rural America",
+      "podcast_name": "WSJ Tech News Briefing",
+      "description": "Plus: AI startup Abridge valued at $5.3-billion. And, the UK’s competition regulator sets out proposals to reign in Google search. Victoria Craig hosts.\n\nLearn more about your ad choices. Visit megaphone.fm/adchoices",
+      "published_date": "2025-06-24T19:47:00Z",
+      "duration": "153",
+      "audio_url": "https://pdst.fm/e/chrt.fm/track/1F1B1F/traffic.megaphone.fm/WSJ1573463741.mp3?updated=1750794882",
+      "size_in_bytes": 0
+    },
+    {
+      "id": "06c02c10-50c9-11f0-8748-e330b912535d",
+      "title": "Robotaxi Competition Revs Up as Tesla Hits the Road in Austin",
+      "podcast_name": "WSJ Tech News Briefing",
+      "description": "Elon Musk’s Tesla has officially launched its self-driving taxi service in Texas. It’s taking on industry leader Waymo, but there are plenty of hurdles on the road to expansion for both companies. WSJ reporters Becky Peterson and Katherine Blunt give us a state-of-the-industry assessment. Victoria Craig hosts.\n\n\n\nSign up for the WSJ's free Technology newsletter.\n\nLearn more about your ad choices. Visit megaphone.fm/adchoices",
+      "published_date": "2025-06-24T07:01:00Z",
+      "duration": "698",
+      "audio_url": "https://pdst.fm/e/chrt.fm/track/1F1B1F/traffic.megaphone.fm/WSJ2620707808.mp3?updated=1750748780",
+      "size_in_bytes": 0
+    },
+    {
+      "id": "98b31560-506a-11f0-8f5c-530a41af6094",
+      "title": "TNB Tech Minute: Main Street Banks Could Get Opening to Join Stablecoin Market",
+      "podcast_name": "WSJ Tech News Briefing",
+      "description": "Plus: German auto-parts company Continental pushes into semiconductors. And the world’s biggest digital camera releases its first photos of deep space.  Victoria Craig hosts.\n\nLearn more about your ad choices. Visit megaphone.fm/adchoices",
+      "published_date": "2025-06-23T19:42:00Z",
+      "duration": "150",
+      "audio_url": "https://pdst.fm/e/chrt.fm/track/1F1B1F/traffic.megaphone.fm/WSJ2591540668.mp3?updated=1750708223",
+      "size_in_bytes": 0
+    },
+    {
+      "id": "db33fdf2-4fff-11f0-ae09-9311e39149a5",
+      "title": "Kevin Rose and Alexis Ohanian on Rebooting Social Media in the Age of AI",
+      "podcast_name": "WSJ Tech News Briefing",
+      "description": "Sometimes the past offers a glimpse of the future. At least that’s what a pair of business partners are hoping when it comes to launching their next-generation Internet forum, a reboot of early internet aggregator Digg. Kevin Rose, co-founder of Digg, and Alexis Ohanian, co-founder of Reddit, discuss their plans on stage with WSJ deputy tech and media editor Wilson Rothman at the WSJ’s Future of Everything event. Victoria Craig hosts.\n\n\n\nSign up for the WSJ's free Technology newsletter.\n\nLearn more about your ad choices. Visit megaphone.fm/adchoices",
+      "published_date": "2025-06-23T07:01:00Z",
+      "duration": "659",
+      "audio_url": "https://pdst.fm/e/chrt.fm/track/1F1B1F/traffic.megaphone.fm/WSJ4561676724.mp3?updated=1750662378",
+      "size_in_bytes": 0
+    },
+    {
+      "id": "35403376-4e19-11f0-b4b5-b34d3a25973f",
+      "title": "TNB Tech Minute: Aflac Said a Cyberattack Might Have Caused the Theft of Personal Data",
+      "podcast_name": "WSJ Tech News Briefing",
+      "description": "Plus: U.S. considers ending some export waivers for U.S. technology in China. And, the European Commission scrutinizes Elon Musk’s X after xAI’s acquisition. Victoria Craig hosts.\n\nLearn more about your ad choices. Visit megaphone.fm/adchoices",
+      "published_date": "2025-06-20T20:55:00Z",
+      "duration": "131",
+      "audio_url": "https://pdst.fm/e/chrt.fm/track/1F1B1F/traffic.megaphone.fm/WSJ8068128992.mp3?updated=1750453364",
+      "size_in_bytes": 0
+    },
+    {
+      "id": "5b5b700e-4da4-11f0-92ef-7f83a2bc3c5a",
+      "title": "Silicon Valley Wants to Woo the Pope on Matters of AI",
+      "podcast_name": "WSJ Tech News Briefing",
+      "description": "The tech revolution drove Pope Leo XIV’s decision to select his papal name, and gave the world a glimpse of his priorities leading the Catholic Church. WSJ reporter Margherita Stancati discusses the long-running dialogue between Silicon Valley and the Vatican. Plus, Oracle is lending a hand to small tech companies that want to do business with the U.S. government. WSJ CIO reporter Belle Lin brings us the exclusive details of a new program, and what’s in it for the multinational tech giant.\n\n\n\nSign up for the WSJ's free Technology newsletter.\n\nLearn more about your ad choices. Visit megaphone.fm/adchoices",
+      "published_date": "2025-06-20T07:01:00Z",
+      "duration": "805",
+      "audio_url": "https://pdst.fm/e/chrt.fm/track/1F1B1F/traffic.megaphone.fm/WSJ7640745808.mp3?updated=1750403176",
+      "size_in_bytes": 0
+    },
+    {
+      "id": "de83a3e4-4c7c-11f0-ad88-9fbfcfc6d1a4",
+      "title": "TNB Tech Minute: Waymo Sets Its Sights on NYC, With a Twist",
+      "podcast_name": "WSJ Tech News Briefing",
+      "description": "Plus: More than $90 million is drained from Iran’s biggest crypto exchange. And, Texas Instruments to invest $60 billion in made-in-America production. Victoria Craig hosts.\n\nLearn more about your ad choices. Visit megaphone.fm/adchoices",
+      "published_date": "2025-06-18T19:40:00Z",
+      "duration": "146",
+      "audio_url": "https://pdst.fm/e/chrt.fm/track/1F1B1F/traffic.megaphone.fm/WSJ6762211397.mp3?updated=1750276266",
+      "size_in_bytes": 0
+    },
+    {
+      "id": "06d4229e-4c12-11f0-92c3-63238e97909e",
+      "title": "What the Future Holds for Stablecoins After Senate Passes Genius Act",
+      "podcast_name": "WSJ Tech News Briefing",
+      "description": "Senators gave the go ahead to legislation called the Genius Act, which seeks to regulate the stablecoin industry. But some say the new rules don’t go far enough. WSJ Heard on the Street columnist Telis Demos explains what it all means. Plus, the conflict between Israel and Iran could spread beyond the physical battlefield. We hear from WSJ reporter James Rundle about growing cybersecurity concerns.\n\n\n\nSign up for the WSJ's free Technology newsletter.\n\nLearn more about your ad choices. Visit megaphone.fm/adchoices",
+      "published_date": "2025-06-18T07:01:00Z",
+      "duration": "763",
+      "audio_url": "https://pdst.fm/e/chrt.fm/track/1F1B1F/traffic.megaphone.fm/WSJ9080666538.mp3?updated=1750230477",
+      "size_in_bytes": 0
+    },
+    {
+      "id": "a4c1c8ea-4bb7-11f0-9a21-57484d913e17",
+      "title": "TNB Tech Minute: Amazon’s CEO Says Workforce Will Shrink Thanks to AI",
+      "podcast_name": "WSJ Tech News Briefing",
+      "description": "Plus: Robinhood unveils new features to woo traders. And Oracle unveils initiative to help small tech companies sell to the Pentagon. Victoria Craig hosts.\n\nLearn more about your ad choices. Visit megaphone.fm/adchoices",
+      "published_date": "2025-06-17T20:12:00Z",
+      "duration": "141",
+      "audio_url": "https://pdst.fm/e/chrt.fm/track/1F1B1F/traffic.megaphone.fm/WSJ2862216248.mp3?updated=1750191558",
+      "size_in_bytes": 0
+    },
+    {
+      "id": "dd154f4c-4b48-11f0-9f1d-f7d7950df77e",
+      "title": "Is a Trump Smartphone Made in America Possible?",
+      "podcast_name": "WSJ Tech News Briefing",
+      "description": "The Trump Organization took the wraps off a golden smartphone it says will be made in the U.S. and sell for just under $500. WSJ deputy tech and media editor Wilson Rothman walks us through the promised specs and why it isn’t possible to make it in America by August. Plus, Gulf states are spending billions of dollars to develop their own artificial-intelligence industries. WSJ Heard on the Street columnist Asa Fitch explains why U.S. companies benefitting from the windfall should be wary.\n\n\n\nSign up for the WSJ's free Technology newsletter.\n\nLearn more about your ad choices. Visit megaphone.fm/adchoices",
+      "published_date": "2025-06-17T07:01:00Z",
+      "duration": "696",
+      "audio_url": "https://pdst.fm/e/chrt.fm/track/1F1B1F/traffic.megaphone.fm/WSJ9462465538.mp3?updated=1750143979",
+      "size_in_bytes": 0
+    },
+    {
+      "id": "1853b12a-4af9-11f0-9ad2-1f9b4ec9e6ff",
+      "title": "TNB Tech Minute: Amazon Invests Billions in Australian Data Centers",
+      "podcast_name": "WSJ Tech News Briefing",
+      "description": "Plus: Southwest Airlines adds pilot alerts to increase runway safety. And, crypto tycoon Justin Sun takes Tron Group public via reverse merger. Victoria Craig hosts.\n\nLearn more about your ad choices. Visit megaphone.fm/adchoices",
+      "published_date": "2025-06-16T21:21:00Z",
+      "duration": "150",
+      "audio_url": "https://pdst.fm/e/chrt.fm/track/1F1B1F/traffic.megaphone.fm/WSJ6728211895.mp3?updated=1750109718",
+      "size_in_bytes": 0
+    },
+    {
+      "id": "b300482a-4a7f-11f0-aa95-df7d0124fb3e",
+      "title": "Inside the Effort to Reboot America’s Nuclear Energy Program",
+      "podcast_name": "WSJ Tech News Briefing",
+      "description": "Since 2021, more than $2-billion of venture capital funds have been plowed into next-gen nuclear technology. WSJ tech and national security reporter Heather Somerville explains how AI growth, competition with China, and President Trump’s desire to dominate the field are ushering in a new era of American nuclear power. Plus, we all need a shoulder to cry on or an empathetic ear once in a while. What if that reassurance came from a digital companion? WSJ family and tech columnist Julie Jargon talks to NYC seniors about whether such conversations are helpful. \n\n\n\nSign up for the WSJ's free Technology newsletter.\n\nLearn more about your ad choices. Visit megaphone.fm/adchoices",
+      "published_date": "2025-06-16T07:01:00Z",
+      "duration": "777",
+      "audio_url": "https://pdst.fm/e/chrt.fm/track/1F1B1F/traffic.megaphone.fm/WSJ2239043875.mp3?updated=1750057579",
+      "size_in_bytes": 0
+    },
+    {
+      "id": "1138dfaa-488d-11f0-a4bc-0fd7cead0f5b",
+      "title": "TNB Tech Minute: Walmart, Amazon Consider Issuing Stablecoins",
+      "podcast_name": "WSJ Tech News Briefing",
+      "description": "Plus: Congress weighs crackdown on mortgage lenders’ spam calls. And, Brookfield strikes deal to buy internet-service provider Hotwire. Victoria Craig hosts.\n\nLearn more about your ad choices. Visit megaphone.fm/adchoices",
+      "published_date": "2025-06-13T19:24:00Z",
+      "duration": "142",
+      "audio_url": "https://pdst.fm/e/chrt.fm/track/1F1B1F/traffic.megaphone.fm/WSJ2386203259.mp3?updated=1749843418",
+      "size_in_bytes": 0
+    },
+    {
+      "id": "32e61a3c-4824-11f0-8e8a-27044031208a",
+      "title": "Elon Musk’s X to Brands: Advertise With Us or We’ll Sue",
+      "podcast_name": "WSJ Tech News Briefing",
+      "description": "X launched a strong-arm campaign against advertisers to revive its ad-sales business. WSJ advertising editor Suzanne Vranica tells us about the unusual tactic. Plus, the \"unsubscribe\" button at the bottom of marketing emails may be an easy way to opt out. But writer Heidi Mitchell will tell you why you shouldn’t be so quick to click.\n\n\n\nSign up for the WSJ's free Technology newsletter.\n\nLearn more about your ad choices. Visit megaphone.fm/adchoices",
+      "published_date": "2025-06-13T07:01:00Z",
+      "duration": "791",
+      "audio_url": "https://pdst.fm/e/chrt.fm/track/1F1B1F/traffic.megaphone.fm/WSJ8589249903.mp3?updated=1749798378",
+      "size_in_bytes": 0
+    }
+  ],
+  "last_updated": "2025-06-29T00:14:31.909219Z"
+}

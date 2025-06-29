@@ -131,8 +131,6 @@ impl FeedFetcher for FakeFetcher {
         Ok(self.response.clone())
     }
 
-    // New method for HEAD request
-
     async fn fetch_headers(&self, _url: &str) -> Result<HashMap<String, String>, DownloaderError> {
         // Return some fake headers, e.g., based on self.response for testing
         let mut headers: HashMap<String, String> = HashMap::new();

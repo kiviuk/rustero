@@ -69,10 +69,11 @@ impl PodcastFactory {
                     .and_then(|s| DateTime::parse_from_rfc2822(s).ok())
                     .map(|dt| dt.with_timezone(&Utc))
                     .unwrap_or_else(Utc::now);
-
+                let podcase_name: String = parsed.channel.title().to_string();
                 Some(Episode::new(
                     EpisodeID::new(&id),
                     title,
+                    podcase_name,
                     description,
                     pub_date,
                     duration,

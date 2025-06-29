@@ -1,9 +1,9 @@
 // src/player/mod.rs
-pub mod player;
-mod event;
 mod command;
+mod event;
+pub mod player;
 
 // Re-export for convenience
-pub use command::PlayerCommand;
+pub use command::PlayerRemoteCommand;
 pub use event::PlayerEvent;
 pub use player::AudioPlayer;

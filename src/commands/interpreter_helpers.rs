@@ -1,7 +1,7 @@
 // src/commands/interpreter_helpers.rs
 use crate::errors::{DownloaderError, PipelineError};
 use crate::podcast_download::FeedFetcher;
-use log::{info, warn, error, debug, trace}; // Import log macros
+use log::{debug, error, info, trace, warn}; // Import log macros
 
 #[derive(Debug)]
 pub(super) enum ValidationStepResult {
@@ -50,15 +50,13 @@ pub(super) async fn try_validate_via_head(
                 {
                     trace!(
                         "Interpreter Helper (HEAD): URL {} validated by Content-Type: {}",
-                        url_str,
-                        content_type
+                        url_str, content_type
                     );
                     Ok(ValidationStepResult::Validated)
                 } else {
                     trace!(
                         "Interpreter Helper (HEAD): URL {} Content-Type '{}' inconclusive.",
-                        url_str,
-                        content_type
+                        url_str, content_type
                     );
                     Ok(ValidationStepResult::Inconclusive)
                 }
@@ -87,10 +85,16 @@ pub(super) async fn try_validate_via_partial_get(
             if partial_content.to_lowercase().contains("<rss")
                 || partial_content.to_lowercase().contains("<feed")
             {
-                trace!("Interpreter Helper (Partial GET): URL {} validated by content inspection.", url_str);
+                trace!(
+                    "Interpreter Helper (Partial GET): URL {} validated by content inspection.",
+                    url_str
+                );
                 Ok(ValidationStepResult::Validated)
             } else {
-                trace!("Interpreter Helper (Partial GET): URL {} Content (first 4KB) inconclusive.", url_str);
+                trace!(
+                    "Interpreter Helper (Partial GET): URL {} Content (first 4KB) inconclusive.",
+                    url_str
+                );
                 Ok(ValidationStepResult::Inconclusive)
             }
         }

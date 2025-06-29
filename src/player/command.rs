@@ -2,7 +2,7 @@
 use crate::podcast::Episode;
 
 #[derive(Debug, Clone)]
-pub enum PlayerCommand {
+pub enum PlayerRemoteCommand {
     /// Plays a new episode. If another is playing, it stops it first.
     PlayEpisode { episode: Episode },
     /// Toggles pause/resume.

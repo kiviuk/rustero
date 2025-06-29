@@ -1,0 +1,570 @@
+{
+  "url": "https://feeds.therepl.net/therepl",
+  "title": "The REPL",
+  "description": "A podcast diving into the technical details behind Clojure programs",
+  "image_url": null,
+  "website_url": "https://www.therepl.net/",
+  "episodes": [
+    {
+      "id": "https://www.therepl.net/episodes/56/",
+      "title": "56: XTDB: A Bitemporal database in Clojure",
+      "podcast_name": "The REPL",
+      "description": "Jeremy Taylor and James Henderson talk about building XTDB, bitemporality, SQL compatibility, and Apache Arrow.  Launching XTDB v2 Grid Dynamics acquires JUXT LSM Tree The Generational Hypothesis JUXT Cast - Viktor Leis HTAP Processing Are We There Yet - Rich Hickey Jepsen Consistency Tree Jepsen Datomic test Jepsen Postgres test Andy Pavlo - CMU Intro to Database Systems sqllogictest",
+      "published_date": "2025-06-13T08:23:56Z",
+      "duration": "01:17:09",
+      "audio_url": "https://feeds.therepl.net/link/19896/17050931/therepl-056.mp3",
+      "size_in_bytes": 37036755
+    },
+    {
+      "id": "https://www.therepl.net/episodes/55/",
+      "title": "55: Instant: a modern Firebase in Clojure, with Stepan Parunashvili",
+      "podcast_name": "The REPL",
+      "description": "Stepan Parunashvili talks about Instant, datalog, building a database in Clojure, and the demands of building modern applications.  Instant Datomic Database in the Browser, a spec A Graph-Based Firebase Tonsky (Nikita Prokopov) The Web after Tomorrow WorldStore: Distributed caching with Reactivity - Asana How Figma’s multiplayer technology works Datascript Google CEL: Common Expression Language Amazon Aurora Instant is hiring!",
+      "published_date": "2024-10-18T06:00:32Z",
+      "duration": "00:52:06",
+      "audio_url": "https://feeds.therepl.net/link/19896/16859566/therepl-055.mp3",
+      "size_in_bytes": 25015860
+    },
+    {
+      "id": "https://www.therepl.net/episodes/54/",
+      "title": "54: JRuby with Charles Oliver Nutter",
+      "podcast_name": "The REPL",
+      "description": "Charles Oliver Nutter talks about JRuby, the JVM, JRuby 10, improving JRuby startup time, and going independent.  JRuby Headius Enterprises Valhalla - Where Are We? at the JVM Language Summit",
+      "published_date": "2024-09-17T01:00:00Z",
+      "duration": "00:54:15",
+      "audio_url": "https://feeds.therepl.net/link/19896/16810601/therepl-054.mp3",
+      "size_in_bytes": 26040049
+    },
+    {
+      "id": "https://www.therepl.net/episodes/53/",
+      "title": "53: Clojure LSP with Eric Dallo",
+      "podcast_name": "The REPL",
+      "description": "Eric Dallo talks about the LSP protocol, and Clojure LSP. Sorry about the audio quality on this recording, I missed that I was using my MacBook Microphone instead of my podcast microphone.\nClojure LSP Langserver.org lsp-mode clj-kondo analysis data clojure-lsp-intellij",
+      "published_date": "2024-04-21T20:33:31Z",
+      "duration": "00:33:27",
+      "audio_url": "https://feeds.therepl.net/link/19896/16661697/therepl-053.mp3",
+      "size_in_bytes": 16058777
+    },
+    {
+      "id": "https://www.therepl.net/episodes/52/",
+      "title": "52: Coding in YAML with Ingy döt Net",
+      "podcast_name": "The REPL",
+      "description": "Ingy döt Net talks about his new programming language YAMLScript, compiling YAML to Clojure, and the development of the YAML format.  SML mailing list archive ActiveState Data::Denter Zope Ingy.net personal website Acmeism SnakeYAML / clj-yaml BPAN PST - Package Super Tool YAMLScript docs release-yamlscript file Yes expressions e.g. a(b c) =&gt; (a b c) and (a + b) =&gt; (+ a b) Deno - capabilities/permissions Advent of YAMLScript New YAML version",
+      "published_date": "2024-04-14T19:00:00Z",
+      "duration": "00:58:17",
+      "audio_url": "https://feeds.therepl.net/link/19896/16649851/therepl-052.mp3",
+      "size_in_bytes": 27975639
+    },
+    {
+      "id": "https://www.therepl.net/episodes/51/",
+      "title": "51: Building a text editor with Nate Hunzaker",
+      "podcast_name": "The REPL",
+      "description": "Nate Hunzaker talks about building a text editor for the web.  Slate Lexical beforeInput event Since the podcast was recorded, Whimsical launched our Grammarly integration",
+      "published_date": "2024-03-05T01:00:00Z",
+      "duration": "00:57:55",
+      "audio_url": "https://feeds.therepl.net/link/19896/16601484/therepl-051.mp3",
+      "size_in_bytes": 27803215
+    },
+    {
+      "id": "https://www.therepl.net/episodes/50/",
+      "title": "50: Peter Taoussanis",
+      "podcast_name": "The REPL",
+      "description": "Peter Taoussanis talks about Sente, Timbre, Carmine, Nippy, Tufte, and many more of his libraries.  The work of Peter Taoussanis Encore naming conventions Paul Graham&rsquo;s A Plan for Spam Quivre Wusoup",
+      "published_date": "2024-02-27T08:00:00Z",
+      "duration": "01:32:26",
+      "audio_url": "https://feeds.therepl.net/link/19896/16594108/therepl-050.mp3",
+      "size_in_bytes": 44369462
+    },
+    {
+      "id": "https://www.therepl.net/episodes/49/",
+      "title": "49: Clerk with Martin Kavalar",
+      "podcast_name": "The REPL",
+      "description": "Martin Kavalar talks about Clerk.  Clerk: Moldable Live Programming for Clojure - PX23 paper Source code for the PX23 paper PDF paper from Latex via Pandoc Pandoc https://2023.programming-conference.org/ https://clerk.vision/ https://github.clerk.garden/ https://mybinder.org/ https://daringfireball.net/linked/2012/12/10/bold-poker Úll conference https://boldpoker.net/ https://boldpoker.net/ull https://www.clojuriststogether.org/members/ https://github.com/nextjournal/clerk",
+      "published_date": "2023-12-29T21:23:50Z",
+      "duration": "00:32:12",
+      "audio_url": "https://feeds.therepl.net/link/19896/16512992/therepl-049.mp3",
+      "size_in_bytes": 15458192
+    },
+    {
+      "id": "https://www.therepl.net/episodes/48/",
+      "title": "48: Biff with Jacob O'Bryant",
+      "podcast_name": "The REPL",
+      "description": "Jacob O'Bryant talks about Biff, XTDB, and building a web framework for small teams.  Tools for Online Speech - Jacob&rsquo;s Personal Site Biff website Biff GitHub Biff&rsquo;s funding announcement Clojurists Together funding announcement XTDB TailwindCSS HTMX Biff upgrade instructions Yakread",
+      "published_date": "2023-09-16T02:08:06Z",
+      "duration": "00:49:48",
+      "audio_url": "https://feeds.therepl.net/link/19896/16351703/therepl-048.mp3",
+      "size_in_bytes": 24104282
+    },
+    {
+      "id": "https://www.therepl.net/episodes/47/",
+      "title": "47: Executable textbooks with Sam Ritchie",
+      "podcast_name": "The REPL",
+      "description": "Sam Ritchie talks about the Mentat Collective, executable textbooks, visual math.  Mentat Collective GitHub - read this first to get an overview of all of the pieces. ThinkFun Mark Engelberg Cascalog Google X The Dynamic Notebook Structure and Interpretation of Classical Mechanics SICM free online version maria.cloud Brad Feld, John Underkoffler How to fold a Julia fractal Clerk Sicmutils Scmutils SICM-utils Scicloj meetup Road to Reality Substack",
+      "published_date": "2023-01-12T14:20:00Z",
+      "duration": "00:54:18",
+      "audio_url": "https://feeds.therepl.net/link/19896/15901717/therepl-047.mp3",
+      "size_in_bytes": 26261859
+    },
+    {
+      "id": "https://www.therepl.net/episodes/46/",
+      "title": "46: ClojureDart with Christophe Grand and Baptiste Dupuch",
+      "podcast_name": "The REPL",
+      "description": "Christophe Grand and Baptiste Dupuch talk about ClojureDart, a new dialect of Clojure.  ClojureDart Skia flutter-mx DartClojure Tweet from showing code reduction vs Dart ClojureDart workshop - ClojureStream",
+      "published_date": "2022-12-23T21:00:00Z",
+      "duration": "00:41:52",
+      "audio_url": "https://feeds.therepl.net/link/19896/15865171/therepl-046.mp3",
+      "size_in_bytes": 20101596
+    },
+    {
+      "id": "https://www.therepl.net/episodes/45/",
+      "title": "45: Data Rabbit with Ryan Robitaille",
+      "podcast_name": "The REPL",
+      "description": "Ryan Robitaille talks about data visualisation, and building a visual coding environment in Clojure.  Data Rabbit &ldquo;Programming is blindly manipulating symbols&rdquo; - Bret Victor Storybook",
+      "published_date": "2022-10-03T20:00:00Z",
+      "duration": "00:29:47",
+      "audio_url": "https://feeds.therepl.net/link/19896/15680057/therepl-045.mp3",
+      "size_in_bytes": 14495486
+    },
+    {
+      "id": "https://www.therepl.net/episodes/44/",
+      "title": "44: Jank with Jeaye Wilkerson",
+      "podcast_name": "The REPL",
+      "description": "Jeaye Wilkerson talks about compilers, LLVM, and building a dynamic, compiled Clojure. Note: I used the wrong link initially when publishing this episode. If you are hearing the wrong conversation, delete the episode and re-download it. Thanks!\nJeaye has a background in C++ systems programming, focusing on games and game engines. After 5 years of that, he co-founded an esports tournament startup written in full-stack Clojure for another 5 years. These days, he’s at Electronic Arts (EA) building tooling used to make some of the world’s top games.\nIn each space, C++, Rust, Clojure, NixOS, etc, Jeaye aims to make an impact with his open source projects. For Clojure, at first, that was with Orchestra. Now, the flagship is jank.\nJank Cling - CERN&rsquo;s interactive C++ interpreter Immer - Immutable data structures for C++ Swig - Generate bindings for C/C++ code GraalVM Polyglot Orchestra Compiler Spotlight q3 Jeaye&rsquo;s GitHub Sponsors profile Compiler Spotlight on Fennel",
+      "published_date": "2022-09-17T03:57:33Z",
+      "duration": "00:42:52",
+      "audio_url": "https://feeds.therepl.net/link/19896/15646508/therepl-044.mp3",
+      "size_in_bytes": 20776172
+    },
+    {
+      "id": "https://www.therepl.net/episodes/43/",
+      "title": "43: Clojure, The Essential Reference with Renzo Borgatti",
+      "podcast_name": "The REPL",
+      "description": "Renzo Borgatti talks about what he learnt while creating his reference of the Clojure standard library, and about the re:Clojure conference..  Clojure, The Essential Reference, use the discount code “podrepl20” for a 40% discount on all products seque - clojure.core History of Clojure paper - A History of Clojure talk, A History of Clojure (PDF) use-context-classloader get rid of root classloader commit definline Contrib Libraries Asciidoc reborg/csl-book-examples: &ldquo;Clojure: The Essential Reference&rdquo; book examples by chapter. Alex Ott ClojureX is cancelled 2019 re:Clojure 2021 SciCloj: Lambda Days 2022",
+      "published_date": "2021-11-13T03:10:33Z",
+      "duration": "00:58:32",
+      "audio_url": "https://feeds.therepl.net/link/19896/14869674/therepl-043.mp3",
+      "size_in_bytes": 28292128
+    },
+    {
+      "id": "https://www.therepl.net/episodes/42/",
+      "title": "42: Faster JSON parsing with Erik Assum",
+      "podcast_name": "The REPL",
+      "description": "Erik Assum talks about clj-commons, speeding up clojure.data.json, and asks Daniel what he's been up to..  Idealcast - Gene Kim, Michael Nygard, part 2 CLJ Commons clojure.data.json Clojure&rsquo;s JSON ecosystem Erik&rsquo;s commits to data.json JSON performance testing Ardoq Careers",
+      "published_date": "2021-10-07T08:00:00Z",
+      "duration": "00:55:37",
+      "audio_url": "https://feeds.therepl.net/link/19896/14796578/therepl-042.mp3",
+      "size_in_bytes": 26703152
+    },
+    {
+      "id": "https://www.therepl.net/episodes/41/",
+      "title": "41: Clojure pre-history with Chris Houser",
+      "podcast_name": "The REPL",
+      "description": "Chris Houser (Chouser) reflects on the early years of Clojure, Clojure's features, and applying the lessons of Clojure elsewhere.. Note: this podcast was recorded in April 2020 but not published until now. Some of the references are a little outdated, but there&rsquo;s still some great stuff here that I wanted to get out.\nIn particular, it doesn&rsquo;t seem like COVID spreads via metal surfaces very much.\n(00:00) Intro\n(00:27) The Joy of Clojure\n(03:55) Clojure history\n(10:55) Clojure and parallel programming\n(15:59) Macros\n(18:18) Lessons from Clojure\n(22:30) Did Erlang have the right idea all along?\n(28:08) State of the world in April 2020\n(30:31) 3D Printing\nThe Joy of Clojure 40% discount code (good for all Manning products at manning.com in all formats): podrepl20 Tru64 UNIX Ender 3 3d printer Onshape Weight lifting bar collar 3d model Gerbil feeder",
+      "published_date": "2021-09-20T19:08:00Z",
+      "duration": "00:39:37",
+      "audio_url": "https://feeds.therepl.net/link/19896/14767386/therepl-041.mp3",
+      "size_in_bytes": 19021183
+    },
+    {
+      "id": "https://www.therepl.net/episodes/40/",
+      "title": "40: Shipping Clojure code with Paulus Esterhazy",
+      "podcast_name": "The REPL",
+      "description": "Paulus Esterhazy talks about trunk-based development, monorepos, path-focused design, and fast feedback.  Pitch clojureD 2020: &ldquo;Angels Singing: Writing for Programmers&rdquo; by Paulus Esterhazy Monorepos and the Fallacy of Scale Trunk based development GeePaw Hill Path-Focused Design DORA Metrics to Measure DevOps Performance The RAT: Rework Avoidance Theory Understanding Incremental Switchover bhauman/devcards juxt/bidi BurntSushi/ripgrep",
+      "published_date": "2021-09-13T20:00:00Z",
+      "duration": "00:57:44",
+      "audio_url": "https://feeds.therepl.net/link/19896/14748175/therepl-040.mp3",
+      "size_in_bytes": 27910931
+    },
+    {
+      "id": "https://www.therepl.net/episodes/39/",
+      "title": "39: Clojure Goes Fast with Alexander Yakushev",
+      "podcast_name": "The REPL",
+      "description": "Alexander Yakushev talks about performance measurement tools, and Clojure Goes Fast.  Grammarly Clojure Goes Fast clj-async-profiler Why (Most) Sampling Java Profilers Are Terrible JVisualVM clj-memory-meter Eclipse Memory Analyzer (MAT) Introspection tool: object memory meter Introspection tools: Java decompilers clojuredocs unchecked-math clj-decompiler.el jvm-hiccup-meter jvm-alloc-rate-meter jHiccup Shenandoah in production Azul Virgil Grammarly Jobs The Future of Work at Grammarly",
+      "published_date": "2021-09-06T20:00:00Z",
+      "duration": "00:58:47",
+      "audio_url": "https://feeds.therepl.net/link/19896/14734898/therepl-039.mp3",
+      "size_in_bytes": 28414564
+    },
+    {
+      "id": "https://www.therepl.net/episodes/38/",
+      "title": "38: Banking and Clojure with Allen Rohner",
+      "podcast_name": "The REPL",
+      "description": "Allen Rohner talks about Griffin, building a new bank, and Bazel.  Griffin Monzo New Bank Start-up unit 2008 United Kingdom bank rescue package griffinbank/rules_clojure spectrum Griffin API docs",
+      "published_date": "2021-08-31T03:30:00Z",
+      "duration": "00:28:26",
+      "audio_url": "https://feeds.therepl.net/link/19896/14715834/therepl-038.mp3",
+      "size_in_bytes": 13841994
+    },
+    {
+      "id": "https://www.therepl.net/episodes/37/",
+      "title": "37: The Clojurists Together Foundation with lvh",
+      "podcast_name": "The REPL",
+      "description": "lvh talks about the Clojurists Together Foundation..  Announcing the Clojurists Together Foundation Clojurists Together Announcing Summer of Bugs Apply for funding Clojurists Together if Funding Clojars Clojurists Together Membership App",
+      "published_date": "2020-05-21T09:13:00Z",
+      "duration": "00:24:44",
+      "audio_url": "https://feeds.therepl.net/link/19896/13558695/therepl-037.mp3",
+      "size_in_bytes": 11874232
+    },
+    {
+      "id": "https://www.therepl.net/episodes/36/",
+      "title": "36: Clojure CLI tools with Michiel Borkent",
+      "podcast_name": "The REPL",
+      "description": "Michiel Borkent talks about clj-kondo, Jet, Babashka, and GraalVM..  clj-kondo Joker Graalvm tools.analyzer tools.reader rewrite-clj Jet CLJ-1472 hato http client babashka Medley Regal clojure.lang.Var deps.clj carve spec searching speculative The REPL - Martin Klepsche Hoogle re-find re-find.web",
+      "published_date": "2020-04-25T21:15:43Z",
+      "duration": "00:58:30",
+      "audio_url": "https://feeds.therepl.net/link/19896/13482716/therepl-036.mp3",
+      "size_in_bytes": 28282491
+    },
+    {
+      "id": "https://www.therepl.net/episodes/35/",
+      "title": "35: Mature Clojure codebases with Łukasz Korecki",
+      "podcast_name": "The REPL",
+      "description": "Łukasz Korecki talks about building a mature startup using Clojure. He also talks about how EnjoyHQ built a successful distributed team..  Plumbing Avro Migratus Consul etcd Jgroups Clojure North talk plumatic/plumbing nomnom.duckula",
+      "published_date": "2020-04-01T23:17:03Z",
+      "duration": "00:56:14",
+      "audio_url": "https://feeds.therepl.net/link/19896/13434354/therepl-035.mp3",
+      "size_in_bytes": 27190543
+    },
+    {
+      "id": "https://www.therepl.net/episodes/34/",
+      "title": "34: CIDER and tending the Orchard with Bozhidar Batsov",
+      "podcast_name": "The REPL",
+      "description": "Bozhidar Batsov talks about CIDER, the Orchard, Clojure, Emacs, Ruby, and style guides. Note: this episode was recorded in October 2019.\nBozhidar&rsquo;s GitHub sponsors page Clojure-mode CIDER nREPL Reply Sayid Biggest impact nREPL sideloading Orchard Refactor-nrepl cider-nrepl clojure-mode Contributing to CIDER Cider-selector cider-nrepl docs Rubocop Ruby Style Guide Projectile Emacs prelude Spacemacs Doom emacs Crux Calva Clojure Style Guide Clj-kondo Toptal Toptal Careers",
+      "published_date": "2020-03-24T19:00:00Z",
+      "duration": "01:07:39",
+      "audio_url": "https://feeds.therepl.net/link/19896/13387702/therepl-034.mp3",
+      "size_in_bytes": 32672733
+    },
+    {
+      "id": "https://www.therepl.net/episodes/33/",
+      "title": "33: Peter Strömberg on Calva, a Clojure plugin for VS Code",
+      "podcast_name": "The REPL",
+      "description": "Peter Strömberg talks about Calva, VS Code, Clojurists Together funding, and how you can contribute..  Calva on GitHub How to contribute to Calva Clojure Warrior Clojure-lsp Language Server Protocol The Calva Team Peter Strömberg Kevin Stehn Christian Fehse",
+      "published_date": "2019-11-23T01:44:06Z",
+      "duration": "00:37:13",
+      "audio_url": "https://feeds.therepl.net/link/19896/12996602/therepl-033.mp3",
+      "size_in_bytes": 18066795
+    },
+    {
+      "id": "https://www.therepl.net/episodes/32/",
+      "title": "32: Clojure, Kafka, and OPERATR with Derek Troy-West",
+      "podcast_name": "The REPL",
+      "description": "Derek Troy-West talks about scaling systems with Clojure, Kafka, and building systems with pure data.  &ldquo;I write Clojure almost every day&rdquo; Troy-West OPERATR OPERATR demo Follow The Data - Derek Troy-West - Clojure/Conj 2019 Verrency Apache Kafka Three Ways",
+      "published_date": "2019-11-13T06:00:00Z",
+      "duration": "00:39:55",
+      "audio_url": "https://feeds.therepl.net/link/19896/12970474/therepl-032.mp3",
+      "size_in_bytes": 19359738
+    },
+    {
+      "id": "https://www.therepl.net/episodes/31/",
+      "title": "31: Joel Holdbrooks on Meander",
+      "podcast_name": "The REPL",
+      "description": "Joel Holdbrooks talks about Meander, interpreters, operational semantics, and Clojurists Together funding..  Meander &ldquo;Meander: Declarative Explorations at the Limits of FP&rdquo; by Jimmy Miller Small step interpreter Matt Might - Abstract interpreters for free [PDF] Matt Might - Writing an interpreter, CESK-style SECD versus CEK Mind in Motion, Barbara Tversky Shaun Mahood renaming Garden files",
+      "published_date": "2019-11-08T03:30:04Z",
+      "duration": "01:06:29",
+      "audio_url": "https://feeds.therepl.net/link/19896/12959497/therepl-031.mp3",
+      "size_in_bytes": 32113117
+    },
+    {
+      "id": "https://www.therepl.net/episodes/30/",
+      "title": "30: Bobby Calderwood on Kafka and Fintech",
+      "podcast_name": "The REPL",
+      "description": "Bobby Calderwood talks about banking and financial technology in the US, mainframes, Kafka, and their new platform..  Evident Systems Finxact, Finastra, Mambu, Temenos ACH The Clearing House FedNow Bobby at Finovate Jack Henry Symitar Confluent Commander: Better Distributed Applications through CQRS Event Modelling - Adam Dymitruk Kafka Streams Confluent Schema Registry Kafka KStreams API Jackdaw Willa About Evident Systems",
+      "published_date": "2019-10-22T01:36:33Z",
+      "duration": "00:41:57",
+      "audio_url": "https://feeds.therepl.net/link/19896/12914627/therepl-030.mp3",
+      "size_in_bytes": 20335105
+    },
+    {
+      "id": "https://www.therepl.net/episodes/29/",
+      "title": "29: Marc O'Morain on adding Windows support to CircleCI",
+      "podcast_name": "The REPL",
+      "description": "Marc O'Morain talks about CircleCI's new Windows support, their new JavaScript frontend, and fighting cryptominers..  Introducing Windows support on CircleCI The development of queueing theory - Wikipedia CircleCI Series D fundraising round CircleCI Careers CircleCI&rsquo;s WAFL Pipelines CircleCI&rsquo;s new pricing circle.ci/cli",
+      "published_date": "2019-08-26T17:00:00Z",
+      "duration": "00:48:51",
+      "audio_url": "https://feeds.therepl.net/link/19896/12768956/therepl-029.mp3",
+      "size_in_bytes": 23650257
+    },
+    {
+      "id": "https://www.therepl.net/episodes/28/",
+      "title": "28: Ambrose Bonnaire-Sergeant on Typed Clojure",
+      "podcast_name": "The REPL",
+      "description": "Ambrose Bonnaire-Sergeant talks about Spec, typing, and doing three degrees in Typed Clojure.  Typed Clojure In Theory and Practice - Ambrose Bonnaire-Sergeant (pdf) Spectrum Patreon - Ambrose core.typed.analyzer.jvm core.typed.annotator.jvm cljfx Ambrose&rsquo;s Blog",
+      "published_date": "2019-08-12T05:28:41Z",
+      "duration": "00:53:07",
+      "audio_url": "https://feeds.therepl.net/link/19896/12735555/therepl-028.mp3",
+      "size_in_bytes": 25694277
+    },
+    {
+      "id": "https://www.therepl.net/episodes/27/",
+      "title": "27: Eric Normand on teaching Clojure",
+      "podcast_name": "The REPL",
+      "description": "Eric Normand talks about his new course on REPL driven development, and teaching Clojure.  PurelyFunctional.tv REPL driven development in Clojure On the podcast I forgot to mention this excellent guide on using the REPL on clojure.org Lispcast Thoughts on Functional Programming apropos Clojure Youtube channel",
+      "published_date": "2019-07-24T07:00:00Z",
+      "duration": "00:42:12",
+      "audio_url": "https://feeds.therepl.net/link/19896/12688100/therepl-027.mp3",
+      "size_in_bytes": 20452407
+    },
+    {
+      "id": "https://www.therepl.net/episodes/26/",
+      "title": "26: Nathan Marz on a new programming paradigm",
+      "podcast_name": "The REPL",
+      "description": "Nathan Marz talks about his new company Red Planet Labs, Specter, and building a new programming paradigm.  Red Planet Labs Continuation Specter Inline caching with Specter",
+      "published_date": "2019-07-10T07:00:00Z",
+      "duration": "00:35:28",
+      "audio_url": "https://feeds.therepl.net/link/19896/12648865/therepl-026.mp3",
+      "size_in_bytes": 17219579
+    },
+    {
+      "id": "https://www.therepl.net/episodes/25/",
+      "title": "25: Dragan Djuric on Neanderthal",
+      "podcast_name": "The REPL",
+      "description": "Dragan Djuric talks about his recent work writing Deep Learning in Clojure from Scratch. We also talked about writing technical books that use Clojure, rather than technical books about Clojure..  dragan.rocks Deep Learning in Clojure from Scratch Patreon - Dragan Patreon - Dragan&rsquo;s books Interactive Programming for Artificial Intelligence Deep Learning for Programmers Uncomplicate Neanderthal Clojurists Together funding announcement for Neanderthal",
+      "published_date": "2019-06-26T07:00:00Z",
+      "duration": "00:40:49",
+      "audio_url": "https://feeds.therepl.net/link/19896/12241226/therepl-025.mp3",
+      "size_in_bytes": 19791401
+    },
+    {
+      "id": "https://www.therepl.net/episodes/24/",
+      "title": "24: Crux, a new bitemporal database from JUXT",
+      "podcast_name": "The REPL",
+      "description": "Jeremy Taylor and Malcolm Sparks from JUXT talk about Crux, their new open source database, why they made it, and which gaps it fills..  Crux Crux at Clojure/north Temporal features in SQL 2011 [PDF] Crux architecture diagram Crux protocols",
+      "published_date": "2019-06-12T06:27:11Z",
+      "duration": "00:52:56",
+      "audio_url": "https://feeds.therepl.net/link/19896/11700886/therepl-024.mp3",
+      "size_in_bytes": 25605633
+    },
+    {
+      "id": "https://www.therepl.net/episodes/23/",
+      "title": "23: Elements of Clojure with Zach Tellman",
+      "podcast_name": "The REPL",
+      "description": "Zach Tellman talks about writing Elements of Clojure, some of the work he's done in Clojure over the last ten years, and what's next..  Elements of Clojure Ideolalia Bifurcan comparison to other data structures Jorge Luis Borges Standing in the Shadow of Giants CLJ-1517 - unrolled small vectors CLJ-1415 - Keyword cache cleanup incurs linear scan of cache Open Source is Not About You Semantic Machines",
+      "published_date": "2019-04-18T23:06:18Z",
+      "duration": "01:35:49",
+      "audio_url": "https://feeds.therepl.net/link/19896/11273762/therepl-023.mp3",
+      "size_in_bytes": 46193136
+    },
+    {
+      "id": "https://www.therepl.net/episodes/22/",
+      "title": "22: Cursive IDE with Colin Fleming",
+      "podcast_name": "The REPL",
+      "description": "Colin Fleming talks about building Cursive IDE on the IntelliJ platform.  Cursive IDE The IntelliJ Platform",
+      "published_date": "2019-04-02T18:19:46Z",
+      "duration": "00:41:21",
+      "audio_url": "https://feeds.therepl.net/link/19896/11217091/therepl-022.mp3",
+      "size_in_bytes": 20047785
+    },
+    {
+      "id": "https://www.therepl.net/episodes/21/",
+      "title": "21: Looking at Clojure through the mindset of business with Jonathan Boston",
+      "podcast_name": "The REPL",
+      "description": "Jonathan Boston discusses Clojure, business, the best and worst code he wrote last year, and the ClojureScript community..  ClojureScript Made Easy My Worst and Best Code of 2018 10,000 core.async processes",
+      "published_date": "2019-03-26T18:00:00Z",
+      "duration": "00:27:40",
+      "audio_url": "https://feeds.therepl.net/link/19896/11194655/therepl-021.mp3",
+      "size_in_bytes": 13478758
+    },
+    {
+      "id": "https://www.therepl.net/episodes/20/",
+      "title": "20: Clojure MXNet with Carin Meier",
+      "podcast_name": "The REPL",
+      "description": "Carin Meier talks about the Clojure MXNet package, MXNet, Scala interop with Java, and ML in society.  MXNet Clojure MXnet tvm-clj on The REPL Scala - Clojure interop utility namespace MXNet Issues tagged with Clojure Clojure MXNet contribution needs Clojurians Slack - #mxnet MXNet Slack joining info Other machine learning libraries Cortex dl4clj jutsu.ai Funny reinforcement learning outcomes Twitter thread on unexpected RL outcomes The Surprising Creativity of Digital Evolution",
+      "published_date": "2019-03-19T18:00:00Z",
+      "duration": "00:38:08",
+      "audio_url": "https://feeds.therepl.net/link/19896/11174374/therepl-020.mp3",
+      "size_in_bytes": 18496193
+    },
+    {
+      "id": "https://www.therepl.net/episodes/19/",
+      "title": "19: Formatting Clojure code with Shaun Lebron",
+      "podcast_name": "The REPL",
+      "description": "I talk with Shaun Lebron about my recent Clojure formatting proposal.  The formatting proposal on ClojureVerse Elastic Tabstops Formatter repository",
+      "published_date": "2019-03-12T18:00:00Z",
+      "duration": "00:41:17",
+      "audio_url": "https://feeds.therepl.net/link/19896/11150285/therepl-019.mp3",
+      "size_in_bytes": 20018712
+    },
+    {
+      "id": "https://www.therepl.net/episodes/18/",
+      "title": "18: Testing Clojure and ClojureScript with Arne Brasseur",
+      "podcast_name": "The REPL",
+      "description": "Arne Brasseur talks about Kaocha, Heart of Clojure, Lambda Island, and Clojureverse.  Kaocha Fudge Midge Avdi Grimm - Transaction Fallacy Kaocha docs on cljdoc Clojurists Together funding announcement Clojurists Together projects Heart of Clojure Announcing Clojureverse Lambda Island Guide to Clojure REPLs Figwheel Main + CIDER + Clojure CLI video Lambda Island Guides on GitHub Clojure.org REPL guides Clojureverse Clojure workflows on Clojureverse Clojurians Slack Log Hiring Arne",
+      "published_date": "2019-02-20T03:54:45Z",
+      "duration": "00:53:55",
+      "audio_url": "https://feeds.therepl.net/link/19896/11087786/therepl-018.mp3",
+      "size_in_bytes": 26082890
+    },
+    {
+      "id": "https://www.therepl.net/episodes/17/",
+      "title": "17: Editing Clojure code with Shaun Lebron",
+      "podcast_name": "The REPL",
+      "description": "Shaun Lebron talks about Parinfer, editor integration, understanding user editing intent, and meeting people where they are..  Parinfer Indent-clj Paredit Smartparens Parinfer&rsquo;s mathematical foundation Inspiring a future Clojure editor with forgotten Lisp UX - Shaun Lebron How was Lisp edited in the 80s and 90s? - Reddit History of Lisp Parentheses research Deepdyve - journal article rental Locus Lisp For Humans - Locus Implementation - Locus Plastic editor from Antonin Hildebrand",
+      "published_date": "2019-02-04T06:30:00Z",
+      "duration": "00:42:24",
+      "audio_url": "https://feeds.therepl.net/link/19896/11039944/therepl-017.mp3",
+      "size_in_bytes": 20551084
+    },
+    {
+      "id": "https://www.therepl.net/episodes/16/",
+      "title": "16: Monorepos and monologues with Alex Engelberg",
+      "podcast_name": "The REPL",
+      "description": "Alex Engelberg discusses his recent talk at the Conj, lein-monolith, and other Amperity open source projects.  Sponsor: Deps - Private Maven Repositories Every Clojure Talk Ever Amperity Amperity Careers Learning and Teaching on the job lein-monolith Greenlight Envoy Instaparse paren.party seajure",
+      "published_date": "2019-01-18T18:46:47Z",
+      "duration": "00:37:00",
+      "audio_url": "https://feeds.therepl.net/link/19896/10996945/therepl-016.mp3",
+      "size_in_bytes": 17763002
+    },
+    {
+      "id": "https://www.therepl.net/episodes/15/",
+      "title": "15: Clojure at Apple with David Taylor",
+      "podcast_name": "The REPL",
+      "description": "David Taylor talks about adopting Clojure at Apple, lessons about management, and balancing being an engineer and a leader..  Sponsor: Deps - Private Maven Repositories Careers at Apple Mob Coding Advent of Code Joy Labs David Taylor (@etherfuse) on Twitter",
+      "published_date": "2019-01-11T19:14:56Z",
+      "duration": "00:35:40",
+      "audio_url": "https://feeds.therepl.net/link/19896/10979027/therepl-015.mp3",
+      "size_in_bytes": 17318294
+    },
+    {
+      "id": "https://www.therepl.net/episodes/14/",
+      "title": "14: ClojureScript, Lumo, and Lambdas with Antonio Monteiro",
+      "podcast_name": "The REPL",
+      "description": "Antonio Monteiro talks about building Lumo, improving the ClojureScript beginner experience, typed GraphQL in OCaml, and creating a custom AWS Lambda runtime.. Sponsor: Deps - Private, Hosted, Maven Repositories\nLumo CLJS GWT Pilloxa V8 custom startup snapshots Glitch with Lumo clj-commons Om Relay Falcor Ladder The REPL episode with Martin Klepsch OCaml Reason ML Lambda support for Powershell Rust runtime for AWS Lambda and GitHub project Antonio&rsquo;s OCaml Lambda runtime AWS Lambda Runtime API Howard Lewis Ship on The REPL talking about GraphQL Small FP - Antonio Monteiro Developing ReasonML frontend with GraphQL Zeit",
+      "published_date": "2018-12-05T02:23:28Z",
+      "duration": "00:59:57",
+      "audio_url": "https://feeds.therepl.net/link/19896/10895715/therepl-014.mp3",
+      "size_in_bytes": 28974881
+    },
+    {
+      "id": "https://www.therepl.net/episodes/13/",
+      "title": "13: High performance Clojure numerics with Chris Nuernberger",
+      "podcast_name": "The REPL",
+      "description": "Chris Nuernberger talks about his work on tvm-clj, unsigned bytes on the JVM, efficient copying of data, neural networks, GPUs. Chris has a wide background across many different areas of computer science and software engineering. He first got into GPGPU programming around 2008 with a research group at CU trying to auto-optimize a simple linear algebra expression (y = Ax + b). He first got into LISP with cmucl after a bout of RSI (pain in hands and fingers) convinced him that mainstream languages at the time (C++, python, C#, Java, ML) didn’t offer enough leverage for the types of projects that he was involved in. He is currently a partner at company named Tech Ascent based in Boulder, Colorado.\ntvm-clj Next Gen Numeric Compilers TVM Time tech.datatype Cortex TVM Halide XGBoost Smile",
+      "published_date": "2018-12-04T19:00:00Z",
+      "duration": "00:54:40",
+      "audio_url": "https://feeds.therepl.net/link/19896/10871568/therepl-013.mp3",
+      "size_in_bytes": 26444976
+    },
+    {
+      "id": "https://www.therepl.net/episodes/12/",
+      "title": "12: Clojure documentation with Martin Klepsch",
+      "podcast_name": "The REPL",
+      "description": "Martin Klepsch talks about cljdoc, an automatic documentation website for all of the Clojure community's code..  Hex.pm, GoDoc, dartdoc, Docs.rs Codox Marginalia cljdoc example pages: zprint, reagent, rum, DataScript, nREPL Martin&rsquo;s talk at ClojuTRE Keechma Toolbox massive docstring Dynadoc Tour of Reaktor&rsquo;s office in Helsinki Heart of Clojure conference Making a cljdoc badge Clojurists Together Jobs",
+      "published_date": "2018-11-27T19:00:00Z",
+      "duration": "00:36:09",
+      "audio_url": "https://feeds.therepl.net/link/19896/10844486/therepl-012.mp3",
+      "size_in_bytes": 17552028
+    },
+    {
+      "id": "https://www.therepl.net/episodes/11/",
+      "title": "11: Saskia Lindner on re-frame-10x, compassionate coding, and mindfulness",
+      "podcast_name": "The REPL",
+      "description": "We talk with Saskia Lindner about her experience working on re-frame-10x in Rails Girls Summer of Code, ClojureBridge, remote working, and compassionate coding..  ClojureBridge Talk at ClojureD on re-frame-10x re-frame-10x Saskia and Chris&rsquo; dev journal Rails Girls Summer of Code Full stack developer job at Zimpler",
+      "published_date": "2018-11-25T19:00:00Z",
+      "duration": "00:37:17",
+      "audio_url": "https://feeds.therepl.net/link/19896/10831290/therepl-011.mp3",
+      "size_in_bytes": 18098776
+    },
+    {
+      "id": "https://www.therepl.net/episodes/10/",
+      "title": "10: Howard Lewis Ship on GraphQL and Lacinia",
+      "podcast_name": "The REPL",
+      "description": "Howard Lewis Ship talks about Walmart Labs and their open source Clojure projects..  Pedestal table routing Lacinia GraphQL Joker Vizdeps Schematic",
+      "published_date": "2018-11-12T09:32:59Z",
+      "duration": "01:16:00",
+      "audio_url": "https://feeds.therepl.net/link/19896/10761422/therepl-010.mp3",
+      "size_in_bytes": 36682250
+    },
+    {
+      "id": "https://www.therepl.net/episodes/9/",
+      "title": "9: Hannah Henderson on Continuous Integration at CircleCI",
+      "podcast_name": "The REPL",
+      "description": "Hannah Henderson talks about CI, Spec, remote work, and engineering at CircleCI..  CircleCI Orbs CircleCI Jobs Lacinia Working with Hannah Preview of the next CircleCI UI",
+      "published_date": "2018-11-02T03:31:00Z",
+      "duration": "00:35:27",
+      "audio_url": "https://feeds.therepl.net/link/19896/10709308/therepl-009.mp3",
+      "size_in_bytes": 17219075
+    },
+    {
+      "id": "https://www.therepl.net/episodes/8/",
+      "title": "8: Elana Hashman on Debian and Clojure",
+      "podcast_name": "The REPL",
+      "description": "Elana Hashman discusses her work on packaging Leiningen, the state of Clojure on Debian, and I ask her all the questions I've ever had about packaging on Linux..  Elana&rsquo;s talk on packaging Leiningen at ClojureSYNC More resources from the ClojureSYNC talk The original Intent To Package for Leiningen Clojure/Leiningen Debian Wiki",
+      "published_date": "2018-10-24T21:21:37Z",
+      "duration": "00:44:23",
+      "audio_url": "https://feeds.therepl.net/link/19896/10646912/therepl-008.mp3",
+      "size_in_bytes": 21508624
+    },
+    {
+      "id": "https://www.therepl.net/episodes/7/",
+      "title": "7: Ben Brinckerhoff on Clojure Spec and Error Messages",
+      "podcast_name": "The REPL",
+      "description": "Ben Brinckerhoff talks about Expound, his tool for formatting Clojure Spec error messages, a common language for Clojure errors, and the wider world of error messages..  Expound Elm errors Orchestra Clojure error messages are accidental ReasonML error messages",
+      "published_date": "2018-10-18T01:09:54Z",
+      "duration": "00:55:32",
+      "audio_url": "https://feeds.therepl.net/link/19896/10591955/therepl-007.mp3",
+      "size_in_bytes": 26858134
+    },
+    {
+      "id": "https://www.therepl.net/episodes/6/",
+      "title": "6: Thomas Heller on Shadow CLJS",
+      "podcast_name": "The REPL",
+      "description": "Thomas Heller talks about the Google Closure compiler, Shadow CLJS, and interop with JavaScript.  Externs JS modules Vue CLI - Graphical interface to Vue Clojurists Together announcement post JS dependencies: The Problem JS dependencies: Going forward JS dependencies: In Practice The many Ways to use shadow-cljs",
+      "published_date": "2018-10-10T03:49:03Z",
+      "duration": "00:39:33",
+      "audio_url": "https://feeds.therepl.net/link/19896/10526936/therepl-006.mp3",
+      "size_in_bytes": 19181625
+    },
+    {
+      "id": "https://www.therepl.net/episodes/5/",
+      "title": "5: Looking At The Web After Tomorrow with Nikita Prokopov",
+      "podcast_name": "The REPL",
+      "description": "Nikita Prokopov talks about data synchronisation, the web after tomorrow, Datascript, Rum, software quality, and font ligatures.  The Web After Tomorrow Jai language Datascript Rum Cognician Swarm Grumpy Website Software disenchantment About Face The Design of Everyday Things Clojure VS Code Calva Fira Code Nikita&rsquo;s Website If you benefit from Nikita&rsquo;s work, you can support him at his Patreon.",
+      "published_date": "2018-10-03T22:15:03Z",
+      "duration": "00:46:25",
+      "audio_url": "https://feeds.therepl.net/link/19896/10475407/therepl-005.mp3",
+      "size_in_bytes": 22482847
+    },
+    {
+      "id": "https://www.therepl.net/episodes/4/",
+      "title": "4: Bruce Hauman on interactive development, Figwheel, and Rebel Readline",
+      "podcast_name": "The REPL",
+      "description": "Bruce Hauman discusses Figwheel, Figwheel Main, Rebel Readline, Tooling, and lots more..  Figwheel Main Devcards Rebel Readline Clojurists Together NZ Missing from maps",
+      "published_date": "2018-09-25T20:39:22Z",
+      "duration": "00:57:21",
+      "audio_url": "https://feeds.therepl.net/link/19896/10405989/therepl-004.mp3",
+      "size_in_bytes": 27732286
+    },
+    {
+      "id": "https://www.therepl.net/episodes/3/",
+      "title": "3: Mike Fikes on ClojureScript type inference, Graal, and Clojurists Together",
+      "podcast_name": "The REPL",
+      "description": "Mike Fikes talks about his recent work adding type inference to the ClojureScript compiler, the AOT cache, cljs.main, Clojurists Together, Graal.js, and Apropos..  CLJS-2865 Optimize string expression concatenation Type inference under :advanced compilation Parameter type inference Graal.js AOT cache Clojurists Together Apropos Clojure",
+      "published_date": "2018-09-16T12:29:45Z",
+      "duration": "00:56:05",
+      "audio_url": "https://feeds.therepl.net/link/19896/10329986/therepl-003.mp3",
+      "size_in_bytes": 27103433
+    },
+    {
+      "id": "https://www.therepl.net/episodes/2/",
+      "title": "2: Daniel Higginbotham on Specmonstah, Clojure Spec, and Ent walking trees",
+      "podcast_name": "The REPL",
+      "description": "Daniel Higginbotham talks about building on top of Clojure spec, designing simple Clojure libraries, the µNolen unit of productivity, and writing useful documentation..  Specmonstah Reify Health Grateful Place, a Positive Community Expound Clojure for the Brave and True Reify Health is hiring for an Engineering Manager and a Senior Data Engineer",
+      "published_date": "2018-09-10T09:45:06Z",
+      "duration": "0:49:26",
+      "audio_url": "https://feeds.therepl.net/link/19896/10278372/therepl-002.mp3",
+      "size_in_bytes": 23926253
+    },
+    {
+      "id": "https://www.therepl.net/episodes/1/",
+      "title": "1: Michael Drogalis on Pyrostore's Acquisition, the future of Onyx, and stream processing",
+      "podcast_name": "The REPL",
+      "description": "Michael Drogalis discusses Pyroclasts's recent acquisition by Confluent, high performance stream processing, working on large Clojure programs, and some of Onyx's technical innovations..  Welcoming The Distributed Masonry Team to Confluent Pyrostore Announcing Pyrostore&rsquo;s tiered storage Component Aeron Mechanical Sympathy Mailing List Michael Drogalis on Twitter",
+      "published_date": "2018-08-29T08:38:56Z",
+      "duration": "0:30:00",
+      "audio_url": "https://feeds.therepl.net/link/19896/10182625/therepl-001.mp3",
+      "size_in_bytes": 14417152
+    }
+  ],
+  "last_updated": "2025-06-29T00:14:32.122569Z"
+}

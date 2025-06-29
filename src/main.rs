@@ -1,23 +1,24 @@
 // src/main.rs
 use anyhow::anyhow;
 use clap::Parser;
+use log::{LevelFilter, error, info};
 use rustero::app::{self, App, load_podcasts_from_disk};
-use rustero::commands::podcast_algebra::{run_commands, PipelineData};
+use rustero::commands::podcast_algebra::{CommandAccumulator, PipelineData, run_commands};
 use rustero::commands::podcast_commands::PodcastCmd;
 use rustero::commands::podcast_pipeline_interpreter::PodcastPipelineInterpreter;
-use rustero::event::AppEvent;
-use rustero::player::{AudioPlayer, PlayerCommand, PlayerEvent};
+use rustero::event::PipelineEvent;
+use rustero::player::{AudioPlayer, PlayerEvent, PlayerRemoteCommand};
+use rustero::podcast::Podcast;
 use rustero::podcast_download::HttpFeedFetcher;
-use log::{error, info, LevelFilter};
 use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::sync::broadcast::{self, Receiver, Sender};
 use tokio::sync::mpsc;
-// --- ADDED: The tool to solve the blocking problem ---
 use tokio::task;
+use tokio::task::JoinHandle;
 
 fn setup_logger() -> anyhow::Result<()> {
-    let log_file_path = "castero.log";
+    let log_file_path: &str = "rustero.log";
     fern::Dispatch::new()
         .format(|out, message, record| {
             out.finish(format_args!(
@@ -40,6 +41,12 @@ fn setup_logger() -> anyhow::Result<()> {
 #[derive(Parser, Debug)]
 #[command(author, version, about = "A TUI podcast client.", long_about = None)]
 struct Args {
+    // By default, clap converts the Rust field name from snake_case to kebab-case:
+    // import_opml_file → import-opml-file
+    // cargo run --release -- \
+    //     --import-opml-file path/to/podcasts.opml \
+    //     --headless
+    // cargo run -- -h
     #[arg(long, value_name = "FILE")]
     import_opml_file: Option<PathBuf>,
     #[arg(long)]
@@ -51,29 +58,38 @@ async fn main() -> anyhow::Result<()> {
     let args: Args = Args::parse();
     setup_logger()?;
 
-    let (event_tx_main, app_event_rx): (Sender<AppEvent>, Receiver<AppEvent>) =
-        broadcast::channel::<AppEvent>(32);
+    // creates a multi-producer, multi-consumer communication channel.
+    let (podcast_event_publisher, podcast_event_subscriber): (
+        Sender<PipelineEvent>,
+        Receiver<PipelineEvent>,
+    ) = broadcast::channel::<PipelineEvent>(32);
 
-    let (player_cmd_tx, player_cmd_rx) = mpsc::channel::<PlayerCommand>(100);
-    let (player_event_tx, player_event_rx) = broadcast::channel::<PlayerEvent>(100);
+    let (player_cmd_publisher, player_cmd_queue): (
+        tokio::sync::mpsc::Sender<PlayerRemoteCommand>,
+        tokio::sync::mpsc::Receiver<PlayerRemoteCommand>,
+    ) = mpsc::channel::<PlayerRemoteCommand>(100);
+    let (player_event_publisher, player_event_subscriber): (
+        Sender<PlayerEvent>,
+        Receiver<PlayerEvent>,
+    ) = broadcast::channel::<PlayerEvent>(100);
 
-    // AudioPlayer is created here, on the main tokio thread. It is NOT Send.
-    let mut player = AudioPlayer::new(player_cmd_rx, player_event_tx)
+    let mut player: AudioPlayer = AudioPlayer::new(player_cmd_queue, player_event_publisher)
         .expect("Failed to create AudioPlayer");
 
     if let Some(opml_path) = args.import_opml_file {
         info!("--- Processing OPML import from: {} ---", opml_path.display());
-        let cmd_import_opml = PodcastCmd::load_opml_file(
+        let cmd_import_opml: PodcastCmd = PodcastCmd::load_opml_file(
             opml_path,
             PodcastCmd::process_opml_entries(vec![], PodcastCmd::end()),
         );
 
-        let fetcher = Arc::new(HttpFeedFetcher::new());
-        let mut interpreter =
-            PodcastPipelineInterpreter::new(fetcher.clone(), event_tx_main.clone());
+        let fetcher: Arc<HttpFeedFetcher> = Arc::new(HttpFeedFetcher::new());
+        let mut interpreter: PodcastPipelineInterpreter =
+            PodcastPipelineInterpreter::new(fetcher.clone(), podcast_event_publisher.clone());
 
         let initial_acc = Ok(PipelineData::default());
-        let import_result = run_commands(&cmd_import_opml, initial_acc, &mut interpreter).await;
+        let import_result: CommandAccumulator =
+            run_commands(&cmd_import_opml, initial_acc, &mut interpreter).await;
 
         if let Err(e) = import_result {
             error!("Error: OPML import failed: {}", e);
@@ -86,21 +102,44 @@ async fn main() -> anyhow::Result<()> {
         }
     }
 
-    // The App struct IS Send, so it can be moved to the blocking thread.
-    let mut app: App = App::new(app_event_rx, player_cmd_tx, player_event_rx);
-    let disk_podcasts = load_podcasts_from_disk();
+    let mut app: App =
+        App::new(podcast_event_subscriber, player_cmd_publisher, player_event_subscriber);
+
+    let disk_podcasts: Vec<Podcast> = load_podcasts_from_disk();
+
     for podcast in disk_podcasts {
         app.add_podcast(podcast);
     }
-    
+
     info!("Starting player and UI tasks...");
 
-    // --- THIS IS THE CORRECT ARCHITECTURE ---
-    // The player runs on the async runtime.
+    // An async task for handling player commands.
+    // This creates a Future, it doesn't run yet.
+    // This task only starts running when it is polled for the first time,
+    // which happens inside the select! macro.
     let player_task = player.run();
-    // The entire blocking UI runs on a dedicated thread from Tokio's pool.
-    let ui_task = task::spawn_blocking(move || app::start_ui(app));
 
+    // A blocking task for running the entire terminal UI.
+    // This moves the entire UI loop off the main async runtime, allowing
+    // async tasks and the blocking UI to run concurrently without interfering with each other.
+    // This starts the ui thread immediately.
+    // The whole point of spawn_blocking is to get blocking work off the current thread as soon
+    // as possible so it doesn't cause stalls. Delaying its start would defeat the purpose.
+    let ui_task: JoinHandle<anyhow::Result<()>> = task::spawn_blocking(move || app::start_ui(app));
+
+    // The heart of the application's concurrency model.
+    // Run both tasks concurrently and wait for the first one to finish.
+    // Imagine you are a manager (the Tokio select! macro). You have two workers:
+    // Alice (the player_task):
+    //   She's working on a complex report.
+    //  You ask her for a status update. She says, "I'm waiting for an email from marketing.
+    //  I'll let you know when it arrives." You move on.
+    // Bob (the UI thread):
+    //   You've sent him out to a construction site to supervise a long job.
+    // The JoinHandle (Bob's walkie-talkie):
+    //   This is the walkie-talkie you use to check on Bob.
+    //  You pick it up and ask, "Bob, are you done?" He says, "Nope, still working!"
+    //  You put the walkie-talkie down and move on.
     tokio::select! {
         player_result = player_task => {
             if let Err(e) = player_result {
@@ -111,8 +150,15 @@ async fn main() -> anyhow::Result<()> {
         },
         ui_result = ui_task => {
             match ui_result {
+                // This means the thread didn't panic,
+                // and start_ui returned Ok(()), indicating a graceful exit (the user quit).
                 Ok(Ok(_)) => info!("UI exited gracefully."),
+                // This is returned by your start_ui function.
+                // This would happen if, for example, crossterm fails to enter raw mode.
                 Ok(Err(e)) => error!("UI exited with an error: {}", e),
+                // his is from the JoinHandle itself.
+                // It will be an Err if the thread spawned by spawn_blocking panicked.
+                // The error would be a JoinError.
                 Err(e) => error!("UI task panicked: {}", e),
             }
         },

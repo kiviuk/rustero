@@ -81,6 +81,8 @@ pub struct Episode {
     id: EpisodeID,
     #[serde(rename = "title")]
     title: String,
+    #[serde(rename = "podcast_name")]
+    podcast_name: String,
     #[serde(rename = "description")]
     description: Option<String>,
     #[serde(rename = "published_date")]
@@ -144,13 +146,14 @@ impl Episode {
     pub fn new(
         id: EpisodeID,
         title: String,
+        podcast_name: String,
         description: Option<String>,
         published_date: DateTime<Utc>,
         duration: Option<String>,
         audio_url: String,
         size_in_bytes: Option<u64>,
     ) -> Self {
-        Self { id, title, description, published_date, duration, audio_url, size_in_bytes }
+        Self { id, title, podcast_name, description, published_date, duration, audio_url, size_in_bytes }
     }
 
     pub fn id(&self) -> &EpisodeID {
@@ -161,6 +164,10 @@ impl Episode {
         &self.title
     }
 
+    pub fn podcast_name(&self) -> &str {
+        &self.podcast_name
+    }
+    
     pub fn description(&self) -> Option<&str> {
         self.description.as_deref()
     }

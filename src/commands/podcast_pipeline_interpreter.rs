@@ -8,7 +8,7 @@ use crate::commands::podcast_algebra::{
 };
 use crate::commands::podcast_commands::PodcastCmd;
 use crate::errors::{DownloaderError, PipelineError};
-use crate::event::AppEvent;
+use crate::event::PipelineEvent;
 use crate::opml::opml_parser::{OpmlFeedEntry, parse_opml_from_file};
 // Import parse_opml_from_file
 use crate::podcast::{Podcast, PodcastURL};
@@ -20,7 +20,7 @@ use std::hash::{Hash, Hasher};
 use std::path::PathBuf;
 // For constructing paths
 use futures::future::join_all;
-use log::{LevelFilter, debug, error, info, warn, trace};
+use log::{LevelFilter, debug, error, info, trace, warn};
 use std::sync::Arc;
 use tokio::sync::broadcast;
 use tokio::task::JoinHandle;
@@ -28,13 +28,13 @@ use url::Url; // Import log macros
 
 pub struct PodcastPipelineInterpreter {
     fetcher: Arc<dyn FeedFetcher + Send + Sync>,
-    event_tx: broadcast::Sender<AppEvent>,
+    event_tx: broadcast::Sender<PipelineEvent>,
 }
 
 impl PodcastPipelineInterpreter {
     pub fn new(
         fetcher: Arc<dyn FeedFetcher + Send + Sync>,
-        event_tx: broadcast::Sender<AppEvent>,
+        event_tx: broadcast::Sender<PipelineEvent>,
     ) -> Self {
         Self { fetcher, event_tx }
     }
@@ -219,7 +219,7 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
                     // For now, we assume Download might have already prepared it, but saving confirms it.
                     // If you want App to only pick up *saved* podcasts, this is where you'd send the event.
                     // For example:
-                    if let Err(e) = self.event_tx.send(AppEvent::PodcastReadyForApp {
+                    if let Err(e) = self.event_tx.send(PipelineEvent::PodcastReadyForApp {
                         podcast: podcast_to_save.clone(), // Clone the podcast data for the event
                         timestamp: chrono::Utc::now(),
                     }) {
@@ -318,7 +318,7 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
             );
 
             let sub_fetcher: Arc<dyn FeedFetcher + Send + Sync> = self.fetcher.clone();
-            let sub_event_tx: broadcast::Sender<AppEvent> = self.event_tx.clone();
+            let sub_event_tx: broadcast::Sender<PipelineEvent> = self.event_tx.clone();
 
             let entry_title_for_logging: String = entry.title.clone();
             let entry_url_for_logging: String = entry.xml_url.clone();
@@ -362,7 +362,10 @@ impl PodcastAlgebra for PodcastPipelineInterpreter {
                 // Check if a podcast was the result of the pipeline
                 if let Some(podcast) = &data.current_podcast {
                     // Log only the podcast title for successful completion
-                    info!("Interpreter: Reached End. Pipeline completed successfully for podcast: '{}'.", podcast.title());
+                    info!(
+                        "Interpreter: Reached End. Pipeline completed successfully for podcast: '{}'.",
+                        podcast.title()
+                    );
                 } else if data.opml_entries.is_some() {
                     // Log if OPML entries were processed, but no single podcast is in the final accumulator
                     info!("Interpreter: Reached End. OPML import pipeline completed successfully.");
