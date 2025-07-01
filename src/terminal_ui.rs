@@ -10,7 +10,10 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem, Paragraph, Wrap},
 };
 use std::rc::Rc;
+use chrono::format::{DelayedFormat, StrftimeItems};
 use unicode_segmentation::UnicodeSegmentation;
+use crate::podcast::Episode;
+
 const DEFAULT_TEXT_WIDTH: usize = 80;
 const TITLE_MAX_LENGTH: usize = 40;
 const EPISODE_NAME_MAX_LENGTH: usize = 80;
@@ -266,25 +269,32 @@ pub fn ui<B: Backend>(f: &mut Frame, app: &mut App) {
         Some(podcast) => {
             let title: String =
                 format!("Episodes: {}", sanitize_panel_title(podcast.title(), None));
-            let items: Vec<ListItem> = podcast
-                .episodes()
-                .iter()
-                .enumerate()
-                .map(|(i, episode)| {
-                    let sanitized_episode_title: String =
-                        sanitize_episode_name(episode.title(), None);
-                    let mut item: ListItem = ListItem::new(sanitized_episode_title);
-                    if Some(i) == app.episodes_list_ui_state.selected() {
-                        item = item.style(if is_episodes_panel_focused {
-                            selected_item_style
-                        } else {
-                            unfocused_selected_item_style
-                        });
-                    }
-                    item
-                })
-                .collect();
-            (title, items)
+
+            let episodes: &[Episode] = podcast.episodes();
+            
+            if episodes.is_empty() {
+                (title, vec![ListItem::new("No episodes found")])
+            } else {
+                let items: Vec<ListItem> = episodes
+                    .iter()
+                    .enumerate()
+                    .map(|(i, episode)| {
+                        let sanitized_episode_title: String =
+                            sanitize_episode_name(episode.title(), None);
+                        let mut item: ListItem = ListItem::new(sanitized_episode_title);
+                        if Some(i) == app.episodes_list_ui_state.selected() {
+                            item = item.style(if is_episodes_panel_focused {
+                                selected_item_style
+                            } else {
+                                unfocused_selected_item_style
+                            });
+                        }
+                        item
+                    })
+                    .collect();
+
+                (title, items)
+            }
         }
         None => ("Episodes".to_string(), vec![ListItem::new("Select a podcast to see episodes")]),
     };
@@ -303,13 +313,41 @@ pub fn ui<B: Backend>(f: &mut Frame, app: &mut App) {
 
     // --- Show Notes Panel ---
     let is_show_notes_focused: bool = app.focused_panel == FocusedPanel::ShowNotes;
+
+    // 1. We will build the entire content for the panel in this string.
+    let mut display_text: String = String::new();
+
+    if let Some(episode) = app.selected_episode() {
+        use std::fmt::Write;
+
+        // 2. Append the metadata. `unwrap()` is safe here because writing to a String never fails.
+        writeln!(display_text, "Podcast: {}", episode.podcast_name()).unwrap();
+        writeln!(display_text, "Episode: {}", episode.title()).unwrap();
+
+        let date_str: DelayedFormat<StrftimeItems> = episode.published_date().format("%Y-%m-%d");
+        // Only show duration if it exists.
+        let duration_str: String = episode.duration().map_or("".to_string(), |d| format!(" | Duration: {}", d));
+        writeln!(display_text, "Date: {}{}", date_str, duration_str).unwrap();
+
+        // 3. Add a visual separator and a blank line for spacing.
+        // We can use the width from the layout chunk to make the separator responsive.
+        let separator: String = "─".repeat(layout_chunks.show_notes_chunk.width.saturating_sub(2) as usize);
+        writeln!(display_text, "\n{}", separator).unwrap();
+        writeln!(display_text, "").unwrap();
+    }
+
+    // 4. Append the original, sanitized show notes content.
+    let show_notes_content: String = app.show_notes_state.content.clone();
+    let sanitized_show_notes_content: String = sanitize_show_notes(&show_notes_content);
+    display_text.push_str(&sanitized_show_notes_content);
+
+    // --------------------------------------------------------------------------------------------
+
     let sanitized_show_notes_title: String = app
         .selected_episode()
         .map_or("Show Notes".to_string(), |e| format!("Show Notes: {}", sanitize_panel_title(e.title(), None)));
-    let show_notes_content: String = app.show_notes_state.content.clone();
-    let sanitized_show_notes_content: String = sanitize_show_notes(&show_notes_content);
 
-    let show_notes_widget: Paragraph = Paragraph::new(sanitized_show_notes_content)
+    let show_notes_widget: Paragraph = Paragraph::new(display_text)
         .wrap(Wrap { trim: true })
         .block(
             Block::default()

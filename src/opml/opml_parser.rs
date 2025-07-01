@@ -3,7 +3,8 @@ use opml::{OPML, Outline};
 use std::fs;
 use std::path::Path;
 use thiserror::Error;
-
+// https://github.com/imdj/opml-editor
+// https://gnulinux.ch/opml-datei-podcast-sammlung
 #[derive(Error, Debug)]
 pub enum OpmlParseError {
     #[error("Failed to read OPML file: {0}")]

@@ -55,10 +55,10 @@ impl PodcastFactory {
             .filter_map(|item| {
                 let id: String = item
                     .guid()
-                    .map(|g| g.value().to_string())
+                    .map(|guid| guid.value().to_string())
                     .or_else(|| item.link().map(String::from))?;
-                let title = item.title()?.to_string();
-                let description = item.description().map(String::from);
+                let title: String = item.title()?.to_string();
+                let description: Option<String> = item.description().map(String::from);
                 let enclosure: &Enclosure = item.enclosure()?; // enclosure is Option<rss::Enclosure>
                 let audio_url: String = enclosure.url().to_string();
                 let size_in_bytes: Option<u64> = enclosure.length().parse::<u64>().ok();
