@@ -18,6 +18,7 @@ use symphonia::core::formats::{FormatOptions, FormatReader, Packet, Track};
 use symphonia::core::io::{MediaSourceStream, ReadOnlySource};
 use symphonia::core::meta::MetadataOptions;
 use symphonia::core::probe::{Hint, ProbeResult};
+use symphonia::core::units::Time;
 use tokio::sync::broadcast::Sender;
 use tokio::time::Interval;
 
@@ -227,7 +228,7 @@ fn play_episode_on_thread(
             .time_base
             .and_then(|time_base| {
                 track.codec_params.n_frames.map(|frames| {
-                    let symphonia_time = time_base.calc_time(frames);
+                    let symphonia_time: Time = time_base.calc_time(frames);
                     Duration::from_secs_f64(symphonia_time.seconds as f64 + symphonia_time.frac)
                 })
             })

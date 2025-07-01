@@ -14,7 +14,7 @@ use chrono::format::{DelayedFormat, StrftimeItems};
 use unicode_segmentation::UnicodeSegmentation;
 use crate::podcast::Episode;
 
-const DEFAULT_TEXT_WIDTH: usize = 80;
+const DEFAULT_TEXT_WIDTH: usize = usize::MAX;
 const TITLE_MAX_LENGTH: usize = 40;
 const EPISODE_NAME_MAX_LENGTH: usize = 80;
 const PODCAST_NAME_MAX_LENGTH: usize = 50;
@@ -100,7 +100,7 @@ fn sanitize_show_notes(html_content: &str) -> String {
         }
     };
 
-    // Clean up excessive whitespace while preserving paragraph breaks
+    // Clean up excessive whitespace while preserving paragraph breaks (double newlines)
     let cleaned_content = plain_text
         .lines()
         .map(|line| line.trim_end())
