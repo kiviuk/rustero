@@ -17,6 +17,8 @@ pub enum PlayerRemoteCommand {
     VolumeUp(f32),
     /// Adjusts volume down.
     VolumeDown(f32),
+    /// Toggles mute.
+    ToggleMute,
     /// Requests the player task to shut down.
     Quit,
 }

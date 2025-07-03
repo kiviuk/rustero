@@ -153,7 +153,16 @@ impl Episode {
         audio_url: String,
         size_in_bytes: Option<u64>,
     ) -> Self {
-        Self { id, title, podcast_name, description, published_date, duration, audio_url, size_in_bytes }
+        Self {
+            id,
+            title,
+            podcast_name,
+            description,
+            published_date,
+            duration,
+            audio_url,
+            size_in_bytes,
+        }
     }
 
     pub fn id(&self) -> &EpisodeID {
@@ -167,7 +176,7 @@ impl Episode {
     pub fn podcast_name(&self) -> &str {
         &self.podcast_name
     }
-    
+
     pub fn description(&self) -> Option<&str> {
         self.description.as_deref()
     }

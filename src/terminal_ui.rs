@@ -1,5 +1,7 @@
 // src/terminal_ui.rs
 use crate::app::{App, FocusedPanel, PlaybackStatus};
+use crate::podcast::Episode;
+use chrono::format::{DelayedFormat, StrftimeItems};
 use emojis;
 use log::error;
 use ratatui::{
@@ -10,16 +12,12 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem, Paragraph, Wrap},
 };
 use std::rc::Rc;
-use chrono::format::{DelayedFormat, StrftimeItems};
 use unicode_segmentation::UnicodeSegmentation;
-use crate::podcast::Episode;
 
 const DEFAULT_TEXT_WIDTH: usize = usize::MAX;
 const TITLE_MAX_LENGTH: usize = 40;
 const EPISODE_NAME_MAX_LENGTH: usize = 80;
 const PODCAST_NAME_MAX_LENGTH: usize = 50;
-
-
 
 /// Removes emojis using grapheme segmentation
 fn remove_emojis(text: &str) -> String {
@@ -42,7 +40,8 @@ fn truncate_with_ellipsis(text: &str, max_length: usize) -> String {
 /// Sanitizer for panel titles (podcast/episode titles at top of panels)
 /// Removes emojis and limits to ~25 characters
 fn sanitize_panel_title(text: &str, fallback: Option<&str>) -> String {
-    let source_text: &str = if text.trim().is_empty() { fallback.unwrap_or("[Untitled]") } else { text };
+    let source_text: &str =
+        if text.trim().is_empty() { fallback.unwrap_or("[Untitled]") } else { text };
 
     let no_emojis: String = remove_emojis(source_text);
     let trimmed: &str = no_emojis.trim();
@@ -92,7 +91,8 @@ fn sanitize_show_notes(html_content: &str) -> String {
     }
 
     // Convert HTML to plain text, preserving basic structure
-    let plain_text: String = match html2text::from_read(html_content.as_bytes(), DEFAULT_TEXT_WIDTH) {
+    let plain_text: String = match html2text::from_read(html_content.as_bytes(), DEFAULT_TEXT_WIDTH)
+    {
         Ok(parsed) => parsed,
         Err(e) => {
             error!("Failed to parse HTML in show notes: {}", e);
@@ -239,8 +239,7 @@ pub fn ui<B: Backend>(f: &mut Frame, app: &mut App) {
         .iter()
         .enumerate()
         .map(|(i, podcast)| {
-            let sanitized_podcast_title: String =
-                sanitize_podcast_name(podcast.title(), None);
+            let sanitized_podcast_title: String = sanitize_podcast_name(podcast.title(), None);
             let mut item: ListItem = ListItem::new(sanitized_podcast_title);
             if Some(i) == app.podcasts_list_ui_state.selected() {
                 item = item.style(if is_podcasts_panel_focused {
@@ -263,7 +262,7 @@ pub fn ui<B: Backend>(f: &mut Frame, app: &mut App) {
     f.render_stateful_widget(
         podcasts_list_widget,
         layout_chunks.podcasts_chunk,
-        &mut app.podcasts_list_ui_state
+        &mut app.podcasts_list_ui_state,
     );
 
     // --- Episodes Panel ---
@@ -276,7 +275,7 @@ pub fn ui<B: Backend>(f: &mut Frame, app: &mut App) {
                 format!("Episodes: {}", sanitize_panel_title(podcast.title(), None));
 
             let episodes: &[Episode] = podcast.episodes();
-            
+
             if episodes.is_empty() {
                 (title, vec![ListItem::new("No episodes found")])
             } else {
@@ -310,7 +309,7 @@ pub fn ui<B: Backend>(f: &mut Frame, app: &mut App) {
                 if is_episodes_panel_focused { focused_style } else { default_style },
             ))
             .highlight_symbol(if is_episodes_panel_focused { ">> " } else { "   " });
-    
+
     f.render_stateful_widget(
         episodes_list_widget,
         layout_chunks.episodes_chunk,
@@ -332,12 +331,14 @@ pub fn ui<B: Backend>(f: &mut Frame, app: &mut App) {
 
         let date_str: DelayedFormat<StrftimeItems> = episode.published_date().format("%Y-%m-%d");
         // Only show duration if it exists.
-        let duration_str: String = episode.duration().map_or("".to_string(), |d| format!(" | Duration: {}", d));
+        let duration_str: String =
+            episode.duration().map_or("".to_string(), |d| format!(" | Duration: {}", d));
         writeln!(display_text, "Date: {}{}", date_str, duration_str).unwrap();
 
         // 3. Add a visual separator and a blank line for spacing.
         // We can use the width from the layout chunk to make the separator responsive.
-        let separator: String = "─".repeat(layout_chunks.show_notes_chunk.width.saturating_sub(2) as usize);
+        let separator: String =
+            "─".repeat(layout_chunks.show_notes_chunk.width.saturating_sub(2) as usize);
         writeln!(display_text, "\n{}", separator).unwrap();
         writeln!(display_text, "").unwrap();
     }
@@ -349,9 +350,10 @@ pub fn ui<B: Backend>(f: &mut Frame, app: &mut App) {
 
     // --------------------------------------------------------------------------------------------
 
-    let sanitized_show_notes_title: String = app
-        .selected_episode()
-        .map_or("Show Notes".to_string(), |e| format!("Show Notes: {}", sanitize_panel_title(e.title(), None)));
+    let sanitized_show_notes_title: String =
+        app.selected_episode().map_or("Show Notes".to_string(), |e| {
+            format!("Show Notes: {}", sanitize_panel_title(e.title(), None))
+        });
 
     let show_notes_widget: Paragraph = Paragraph::new(display_text)
         .wrap(Wrap { trim: true })
@@ -366,7 +368,7 @@ pub fn ui<B: Backend>(f: &mut Frame, app: &mut App) {
 
     // --- Hint Bar ---
     let hint_text: &str =
-        "[←/→/Tab] Switch Panel | [↑/↓] Navigate | [Enter] Play | [Space] Pause | [Q] Quit";
+        "[←/→/Tab] Panel | [↑/↓] Nav | [Enter] Play | [Space] Pause | [-/=] Volume | [M] Mute | [Q] Quit";
     let hint_widget: Paragraph = Paragraph::new(hint_text)
         .style(Style::default().fg(Color::DarkGray))
         .alignment(Alignment::Center);

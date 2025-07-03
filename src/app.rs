@@ -18,9 +18,9 @@ use ratatui::backend::{Backend, CrosstermBackend};
 use ratatui::layout::Rect;
 use ratatui::widgets::ListState;
 use std::io::Stdout;
+use std::path::PathBuf;
 use std::time::Duration;
 use std::{fs, io};
-use std::path::PathBuf;
 use tokio::sync::{broadcast, mpsc};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -249,6 +249,18 @@ impl App {
                     self.play_selected_episode_action();
                 }
                 return;
+            }
+            KeyCode::Char('-') => {
+                self.send_player_command(PlayerRemoteCommand::VolumeDown(0.05));
+                return;
+            }
+            KeyCode::Char('=') => {
+                self.send_player_command(PlayerRemoteCommand::VolumeUp(0.05));
+                return;
+            }
+            KeyCode::Char('m') => {
+                 self.send_player_command(PlayerRemoteCommand::ToggleMute);
+                 return;
             }
             _ => {}
         }

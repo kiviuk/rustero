@@ -31,12 +31,24 @@ pub enum PlaybackStatus {
     Error,
 }
 
+struct MuteState {
+    is_muted: bool,
+    pre_mute_volume: f32,
+}
+
+impl Default for MuteState {
+    fn default() -> Self {
+        Self { is_muted: false, pre_mute_volume: 1.0 }
+    }
+}
+
 pub struct AudioPlayer {
     _rodio_hardware_stream: OutputStream,
     rodio_hardware_stream_handle: OutputStreamHandle,
     player_command_receiver: mpsc::Receiver<PlayerRemoteCommand>,
     player_event_sender: broadcast::Sender<PlayerEvent>,
     active_rodio_sink: Arc<Mutex<Option<Sink>>>,
+    mute_state: Arc<Mutex<MuteState>>,
 }
 
 impl AudioPlayer {
@@ -52,6 +64,7 @@ impl AudioPlayer {
             player_command_receiver,
             player_event_sender,
             active_rodio_sink: Arc::new(Mutex::new(None)),
+            mute_state: Arc::new(Mutex::new(MuteState::default())),
         })
     }
 
@@ -122,6 +135,9 @@ impl AudioPlayer {
             }
             PlayerRemoteCommand::TogglePlayPause => self.toggle_play_pause()?,
             PlayerRemoteCommand::Stop => self.stop_playback(),
+            PlayerRemoteCommand::VolumeUp(amount) => self.volume_up(amount)?,
+            PlayerRemoteCommand::VolumeDown(amount) => self.volume_down(amount)?,
+            PlayerRemoteCommand::ToggleMute => self.toggle_mute()?,
             _ => warn!("Command not yet implemented."),
         }
         Ok(())
@@ -154,6 +170,74 @@ impl AudioPlayer {
             }
         } else {
             warn!("Toggle command received but no active sink.");
+        }
+        Ok(())
+    }
+
+    fn volume_up(&mut self, amount: f32) -> Result<()> {
+        let sink_lock: MutexGuard<Option<Sink>> =
+            self.active_rodio_sink.lock().map_err(|e| anyhow!("Failed to lock sink: {}", e))?;
+        if let Some(sink) = sink_lock.as_ref() {
+            let current_volume: f32 = sink.volume();
+            let new_volume: f32 = (current_volume + amount).min(2.0); // Cap at 200%
+            sink.set_volume(new_volume);
+            info!("Volume increased to {:.2}", new_volume);
+
+            let mut mute_state: MutexGuard<MuteState> =
+                self.mute_state.lock().map_err(|e| anyhow!("Failed to lock mute state: {}", e))?;
+            if new_volume > 0.0 {
+                mute_state.is_muted = false;
+            }
+
+            let _ = self.player_event_sender.send(PlayerEvent::VolumeChanged(new_volume));
+        }
+        Ok(())
+    }
+
+    fn volume_down(&mut self, amount: f32) -> Result<()> {
+        let sink_lock: MutexGuard<Option<Sink>> =
+            self.active_rodio_sink.lock().map_err(|e| anyhow!("Failed to lock sink: {}", e))?;
+        if let Some(sink) = sink_lock.as_ref() {
+            let current_volume = sink.volume();
+            let new_volume = (current_volume - amount).max(0.0);
+            sink.set_volume(new_volume);
+            info!("Volume decreased to {:.2}", new_volume);
+
+            if new_volume == 0.0 {
+                let mut mute_state: MutexGuard<MuteState> = self
+                    .mute_state
+                    .lock()
+                    .map_err(|e| anyhow!("Failed to lock mute state: {}", e))?;
+                if !mute_state.is_muted {
+                    mute_state.is_muted = true;
+                    mute_state.pre_mute_volume = current_volume;
+                }
+            }
+
+            let _ = self.player_event_sender.send(PlayerEvent::VolumeChanged(new_volume));
+        }
+        Ok(())
+    }
+    fn toggle_mute(&mut self) -> Result<()> {
+        let sink_lock: MutexGuard<Option<Sink>> =
+            self.active_rodio_sink.lock().map_err(|e| anyhow!("Failed to lock sink: {}", e))?;
+        if let Some(sink) = sink_lock.as_ref() {
+            let mut mute_state: MutexGuard<MuteState> =
+                self.mute_state.lock().map_err(|e| anyhow!("Failed to lock mute state: {}", e))?;
+
+            if mute_state.is_muted {
+                let new_volume: f32 = mute_state.pre_mute_volume;
+                sink.set_volume(new_volume);
+                mute_state.is_muted = false;
+                info!("Unmuted. Volume restored to {:.2}", new_volume);
+                let _ = self.player_event_sender.send(PlayerEvent::VolumeChanged(new_volume));
+            } else {
+                mute_state.pre_mute_volume = sink.volume();
+                sink.set_volume(0.0);
+                mute_state.is_muted = true;
+                info!("Muted. Volume set to 0.0");
+                let _ = self.player_event_sender.send(PlayerEvent::VolumeChanged(0.0));
+            }
         }
         Ok(())
     }
