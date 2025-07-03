@@ -20,6 +20,7 @@ use ratatui::widgets::ListState;
 use std::io::Stdout;
 use std::time::Duration;
 use std::{fs, io};
+use std::path::PathBuf;
 use tokio::sync::{broadcast, mpsc};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -38,7 +39,7 @@ impl Default for FocusedPanel {
 pub struct App {
     pub should_quit: bool,
     pub podcasts: Vec<Podcast>,
-    pub selected_podcast_index: Option<usize>,
+    pub podcasts_list_ui_state: ListState,
     pub episodes_list_ui_state: ListState,
     pub focused_panel: FocusedPanel,
     pub show_notes_state: ScrollableParagraphState,
@@ -60,7 +61,7 @@ impl App {
         let mut app = App {
             should_quit: false,
             podcasts: Vec::new(),
-            selected_podcast_index: None,
+            podcasts_list_ui_state: ListState::default(),
             episodes_list_ui_state: ListState::default(),
             focused_panel: FocusedPanel::default(),
             show_notes_state: ScrollableParagraphState::default(),
@@ -127,7 +128,7 @@ impl App {
             info!("[APP] Podcast {} already exists. Skipping.", podcast.title());
             return;
         }
-        let was_empty = self.podcasts.is_empty();
+        let was_empty: bool = self.podcasts.is_empty();
         self.podcasts.push(podcast);
         if was_empty {
             self.select_first_podcast();
@@ -136,18 +137,21 @@ impl App {
 
     pub fn select_first_podcast(&mut self) {
         if !self.podcasts.is_empty() {
-            self.selected_podcast_index = Some(0);
+            self.episodes_list_ui_state.select(Some(0));
             if let Some(first_podcast) = self.podcasts.first() {
                 if !first_podcast.episodes().is_empty() {
+                    self.podcasts_list_ui_state.select(Some(0));
                     self.episodes_list_ui_state.select(Some(0));
                 } else {
+                    self.podcasts_list_ui_state.select(None);
                     self.episodes_list_ui_state.select(None);
                 }
             }
         } else {
-            self.selected_podcast_index = None;
+            self.podcasts_list_ui_state.select(None);
             self.episodes_list_ui_state.select(None);
         }
+        *self.podcasts_list_ui_state.offset_mut() = 0;
         *self.episodes_list_ui_state.offset_mut() = 0;
         self.update_show_notes_content();
     }
@@ -183,9 +187,10 @@ impl App {
         if self.podcasts.is_empty() {
             return;
         }
-        let max_index = self.podcasts.len() - 1;
-        let new_idx = self.selected_podcast_index.map_or(0, |i| (i + 1).min(max_index));
-        self.selected_podcast_index = Some(new_idx);
+        let max_index: usize = self.podcasts.len() - 1;
+        let current_podcast_index: Option<usize> = self.podcasts_list_ui_state.selected();
+        let new_idx: Option<usize> = current_podcast_index.map(|idx| (idx + 1).min(max_index));
+        self.podcasts_list_ui_state.select(new_idx);
         self.episodes_list_ui_state.select(Some(0));
         *self.episodes_list_ui_state.offset_mut() = 0;
         self.update_show_notes_content();
@@ -195,8 +200,9 @@ impl App {
         if self.podcasts.is_empty() {
             return;
         }
-        let new_idx = self.selected_podcast_index.map_or(0, |i| i.saturating_sub(1));
-        self.selected_podcast_index = Some(new_idx);
+        let current_podcast_index: Option<usize> = self.podcasts_list_ui_state.selected();
+        let new_idx: Option<usize> = current_podcast_index.map(|i| i.saturating_sub(1));
+        self.podcasts_list_ui_state.select(new_idx);
         self.episodes_list_ui_state.select(Some(0));
         *self.episodes_list_ui_state.offset_mut() = 0;
         self.update_show_notes_content();
@@ -207,9 +213,9 @@ impl App {
             if podcast.episodes().is_empty() {
                 return;
             }
-            let max_index = podcast.episodes().len() - 1;
-            let current_index = self.episodes_list_ui_state.selected().unwrap_or(0);
-            let new_index = (current_index + 1).min(max_index);
+            let max_index: usize = podcast.episodes().len() - 1;
+            let current_index: usize = self.episodes_list_ui_state.selected().unwrap_or(0);
+            let new_index: usize = (current_index + 1).min(max_index);
             self.episodes_list_ui_state.select(Some(new_index));
             self.update_show_notes_content();
         }
@@ -220,8 +226,8 @@ impl App {
             if podcast.episodes().is_empty() {
                 return;
             }
-            let current_index = self.episodes_list_ui_state.selected().unwrap_or(0);
-            let new_index = current_index.saturating_sub(1);
+            let current_index: usize = self.episodes_list_ui_state.selected().unwrap_or(0);
+            let new_index: usize = current_index.saturating_sub(1);
             self.episodes_list_ui_state.select(Some(new_index));
             self.update_show_notes_content();
         }
@@ -301,7 +307,7 @@ impl App {
     }
 
     pub fn selected_podcast(&self) -> Option<&Podcast> {
-        self.selected_podcast_index.and_then(|i| self.podcasts.get(i))
+        self.podcasts_list_ui_state.selected().and_then(|i| self.podcasts.get(i))
     }
 
     pub fn selected_episode(&self) -> Option<&Episode> {
@@ -315,7 +321,7 @@ pub fn load_podcasts_from_disk() -> Vec<Podcast> {
     let mut loaded_podcasts: Vec<Podcast> = Vec::new();
     if let Ok(entries) = fs::read_dir(PODCAST_DATA_DIR) {
         for entry in entries.flatten() {
-            let path = entry.path();
+            let path: PathBuf = entry.path();
             if path.is_file() && path.extension().map_or(false, |ext| ext == "json") {
                 if let Ok(json_content) = fs::read_to_string(&path) {
                     match serde_json::from_str::<Podcast>(&json_content) {

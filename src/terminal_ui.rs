@@ -42,7 +42,7 @@ fn truncate_with_ellipsis(text: &str, max_length: usize) -> String {
 /// Sanitizer for panel titles (podcast/episode titles at top of panels)
 /// Removes emojis and limits to ~25 characters
 fn sanitize_panel_title(text: &str, fallback: Option<&str>) -> String {
-    let source_text = if text.trim().is_empty() { fallback.unwrap_or("[Untitled]") } else { text };
+    let source_text: &str = if text.trim().is_empty() { fallback.unwrap_or("[Untitled]") } else { text };
 
     let no_emojis: String = remove_emojis(source_text);
     let trimmed: &str = no_emojis.trim();
@@ -57,7 +57,7 @@ fn sanitize_panel_title(text: &str, fallback: Option<&str>) -> String {
 /// Sanitizer for episode names in the episode list
 /// Removes emojis but allows longer text for readability
 fn sanitize_episode_name(text: &str, fallback: Option<&str>) -> String {
-    let source_text =
+    let source_text: &str =
         if text.trim().is_empty() { fallback.unwrap_or("[Untitled Episode]") } else { text };
 
     let no_emojis: String = remove_emojis(source_text);
@@ -71,7 +71,7 @@ fn sanitize_episode_name(text: &str, fallback: Option<&str>) -> String {
 }
 
 fn sanitize_podcast_name(text: &str, fallback: Option<&str>) -> String {
-    let source_text =
+    let source_text: &str =
         if text.trim().is_empty() { fallback.unwrap_or("[Untitled Podcast]") } else { text };
 
     let no_emojis: String = remove_emojis(source_text);
@@ -92,7 +92,7 @@ fn sanitize_show_notes(html_content: &str) -> String {
     }
 
     // Convert HTML to plain text, preserving basic structure
-    let plain_text = match html2text::from_read(html_content.as_bytes(), DEFAULT_TEXT_WIDTH) {
+    let plain_text: String = match html2text::from_read(html_content.as_bytes(), DEFAULT_TEXT_WIDTH) {
         Ok(parsed) => parsed,
         Err(e) => {
             error!("Failed to parse HTML in show notes: {}", e);
@@ -101,7 +101,7 @@ fn sanitize_show_notes(html_content: &str) -> String {
     };
 
     // Clean up excessive whitespace while preserving paragraph breaks (double newlines)
-    let cleaned_content = plain_text
+    let cleaned_content: String = plain_text
         .lines()
         .map(|line| line.trim_end())
         .collect::<Vec<_>>()
@@ -110,7 +110,7 @@ fn sanitize_show_notes(html_content: &str) -> String {
         .to_string();
 
     // Remove emojis but preserve the formatting structure
-    let no_emojis = remove_emojis(&cleaned_content);
+    let no_emojis: String = remove_emojis(&cleaned_content);
 
     if no_emojis.trim().is_empty() {
         "No readable content available for this episode.".to_string()
@@ -239,9 +239,10 @@ pub fn ui<B: Backend>(f: &mut Frame, app: &mut App) {
         .iter()
         .enumerate()
         .map(|(i, podcast)| {
-            let sanitized_name: String = sanitize_podcast_name(podcast.title(), None);
-            let mut item: ListItem = ListItem::new(sanitized_name);
-            if Some(i) == app.selected_podcast_index {
+            let sanitized_podcast_title: String =
+                sanitize_podcast_name(podcast.title(), None);
+            let mut item: ListItem = ListItem::new(sanitized_podcast_title);
+            if Some(i) == app.podcasts_list_ui_state.selected() {
                 item = item.style(if is_podcasts_panel_focused {
                     selected_item_style
                 } else {
@@ -259,7 +260,11 @@ pub fn ui<B: Backend>(f: &mut Frame, app: &mut App) {
             ))
             .highlight_symbol(if is_podcasts_panel_focused { ">> " } else { "   " });
 
-    f.render_widget(podcasts_list_widget, layout_chunks.podcasts_chunk);
+    f.render_stateful_widget(
+        podcasts_list_widget,
+        layout_chunks.podcasts_chunk,
+        &mut app.podcasts_list_ui_state
+    );
 
     // --- Episodes Panel ---
     let is_episodes_panel_focused: bool = app.focused_panel == FocusedPanel::Episodes;
@@ -305,6 +310,7 @@ pub fn ui<B: Backend>(f: &mut Frame, app: &mut App) {
                 if is_episodes_panel_focused { focused_style } else { default_style },
             ))
             .highlight_symbol(if is_episodes_panel_focused { ">> " } else { "   " });
+    
     f.render_stateful_widget(
         episodes_list_widget,
         layout_chunks.episodes_chunk,
