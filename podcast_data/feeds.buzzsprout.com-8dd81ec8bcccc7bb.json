@@ -6,6 +6,26 @@
   "website_url": "https://art19.com/shows/the-deprogram",
   "episodes": [
     {
+      "id": "Buzzsprout-17449560",
+      "title": "Episode 189 - The 12 Day Cope Wars",
+      "podcast_name": "The Deprogram",
+      "description": "<p>Posting ceasefires on main.</p><p>You are listening to this episode 1 week after it was released. To get episodes on time, up to 2 exclusive episodes a month, discord access, merch discounts and plenty more - check out our Patreon - https://www.patreon.com/TheDeprogram</p><p>BUY DEPROGRAM MERCH: https://deprogramshop.com/</p><p><br/></p><p><a rel=\"payment\" href=\"https://www.patreon.com/TheDeprogram\">Support the show</a></p><p>Support the show on Patreon: https://www.patreon.com/TheDeprogram<br/>Follow us on Twitter: https://twitter.com/TheDeprogramPod</p>",
+      "published_date": "2025-07-04T14:00:00Z",
+      "duration": "3922",
+      "audio_url": "https://www.buzzsprout.com/1890340/episodes/17449560-episode-189-the-12-day-cope-wars.mp3",
+      "size_in_bytes": 47878311
+    },
+    {
+      "id": "Buzzsprout-17429231",
+      "title": "Teaser: Episode 189 - The 12 Day Cope Wars",
+      "podcast_name": "The Deprogram",
+      "description": "<p>This episode is already available early for Patrons over at: https://www.patreon.com/TheDeprogramSupport <br/><br/>Support the Podcast and get early as well as bonus episodes by donating. Help us stay 100% independent. </p><p><a rel=\"payment\" href=\"https://www.patreon.com/TheDeprogram\">Support the show</a></p><p>Support the show on Patreon: https://www.patreon.com/TheDeprogram<br/>Follow us on Twitter: https://twitter.com/TheDeprogramPod</p>",
+      "published_date": "2025-07-01T10:00:00Z",
+      "duration": "553",
+      "audio_url": "https://www.buzzsprout.com/1890340/episodes/17429231-teaser-episode-189-the-12-day-cope-wars.mp3",
+      "size_in_bytes": 6840622
+    },
+    {
       "id": "Buzzsprout-17409721",
       "title": "Episode 188 - How Israel Collapses",
       "podcast_name": "The Deprogram",
@@ -3406,5 +3426,5 @@
       "size_in_bytes": 64332607
     }
   ],
-  "last_updated": "2025-06-29T00:14:31.890162Z"
+  "last_updated": "2025-07-06T20:16:59.999229Z"
 }

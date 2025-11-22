@@ -6,6 +6,26 @@
   "website_url": "https://blogs.icrc.org/humnlaw-and-policy/",
   "episodes": [
     {
+      "id": "tag:soundcloud,2010:tracks/2123896971",
+      "title": "International humanitarian law and connectivity disruptions during armed conflict",
+      "podcast_name": "ICRC Humanitarian Law and Policy Blog",
+      "description": "“Without information and telecommunication, people don’t know where to go for safety,” the ICRC reported from an ongoing armed conflict. Another humanitarian worker recalled that when connectivity is down and “a bombing happens, especially in the night, you cannot reach ambulances”. The importance of connectivity for people affected by armed conflict is further exemplified when displaced people ask humanitarian organizations for Wi-Fi or a ‘hot spot’, as connectivity provides the most direct contact to their loved ones. Yet, disruptions of connectivity are frequent in today’s armed conflict, at times part of incidental damage caused by hostilities, at other times presented as a measure necessary to impact an enemy’s operations.\n\nIn this post, ICRC Legal Adviser Tilman Rodenhäuser discusses some of the limits that international humanitarian law (IHL) imposes on connectivity disruptions in armed conflict. The notion ‘connectivity disruptions’ is used to describe operations by belligerents that make digital connectivity or tele-communications unavailable or otherwise disrupted, temporarily or in the longer term.",
+      "published_date": "2025-07-03T15:40:14Z",
+      "duration": "00:17:15",
+      "audio_url": "https://feeds.soundcloud.com/stream/2123896971-icrc-lawandpolicy-blog-international-humanitarian-law-and-connectivity-disruptions-during-armed-conflict.mp3",
+      "size_in_bytes": 41404942
+    },
+    {
+      "id": "tag:soundcloud,2010:tracks/2122501299",
+      "title": "Offline and in danger: the humanitarian consequences of connectivity disruptions",
+      "podcast_name": "ICRC Humanitarian Law and Policy Blog",
+      "description": "As people around the world become increasingly reliant on digital and telecommunications networks to access essential services, contact loved ones, and seek help, the rising number of connectivity disruptions in armed conflicts is a growing source of concern for their safety and dignity.\n\nIn this post, ICRC Protection Specialist Cléa Thouin reflects on the humanitarian consequences of such disruptions – situations in which digital or telecommunications become partially or completely lost – and on the need to address their causes and mitigate their impact, especially in contexts where connectivity can mean the difference between life and death.",
+      "published_date": "2025-07-01T08:17:26Z",
+      "duration": "00:14:54",
+      "audio_url": "https://feeds.soundcloud.com/stream/2122501299-icrc-lawandpolicy-blog-offline-and-in-danger-the-humanitarian-consequences-of-connectivity-disruptions.mp3",
+      "size_in_bytes": 35796622
+    },
+    {
       "id": "tag:soundcloud,2010:tracks/2120525031",
       "title": "Photographing humanity: hope amid crisis in Myanmar",
       "podcast_name": "ICRC Humanitarian Law and Policy Blog",
@@ -2446,5 +2466,5 @@
       "size_in_bytes": 37850458
     }
   ],
-  "last_updated": "2025-06-29T00:14:32.362058Z"
+  "last_updated": "2025-07-06T20:17:00.670641Z"
 }

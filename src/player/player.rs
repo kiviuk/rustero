@@ -13,8 +13,10 @@ use super::command::PlayerRemoteCommand;
 use super::event::PlayerEvent;
 use crate::podcast::Episode;
 use symphonia::core::audio::SampleBuffer;
-use symphonia::core::codecs::{CODEC_TYPE_NULL, Decoder, DecoderOptions};
-use symphonia::core::formats::{FormatOptions, FormatReader, Packet, Track};
+// use symphonia::core::codecs::{CODEC_TYPE_NULL, Decoder, DecoderOptions};
+use symphonia::core::codecs::{CODEC_TYPE_NULL, Decoder, DecoderOptions, FinalizeResult};
+use symphonia::core::formats::{FormatOptions, FormatReader, Packet, SeekedTo, Track};
+use symphonia::core::formats::{SeekMode, SeekTo};
 use symphonia::core::io::{MediaSourceStream, ReadOnlySource};
 use symphonia::core::meta::MetadataOptions;
 use symphonia::core::probe::{Hint, ProbeResult};
@@ -42,12 +44,20 @@ impl Default for MuteState {
     }
 }
 
+struct PlaybackState {
+    reader: Box<dyn FormatReader + Send>,
+    decoder: Box<dyn Decoder + Send>,
+    track_id: u32,
+    track_duration: Duration,
+}
+
 pub struct AudioPlayer {
     _rodio_hardware_stream: OutputStream,
     rodio_hardware_stream_handle: OutputStreamHandle,
     player_command_receiver: mpsc::Receiver<PlayerRemoteCommand>,
     player_event_sender: broadcast::Sender<PlayerEvent>,
     active_rodio_sink: Arc<Mutex<Option<Sink>>>,
+    active_playback_state: Arc<Mutex<Option<PlaybackState>>>,
     mute_state: Arc<Mutex<MuteState>>,
 }
 
@@ -64,6 +74,7 @@ impl AudioPlayer {
             player_command_receiver,
             player_event_sender,
             active_rodio_sink: Arc::new(Mutex::new(None)),
+            active_playback_state: Arc::new(Mutex::new(None)),
             mute_state: Arc::new(Mutex::new(MuteState::default())),
         })
     }
@@ -116,6 +127,8 @@ impl AudioPlayer {
                     self.rodio_hardware_stream_handle.clone();
                 let player_event_sender: Sender<PlayerEvent> = self.player_event_sender.clone();
                 let active_rodio_sink: Arc<Mutex<Option<Sink>>> = self.active_rodio_sink.clone();
+                let active_playback_state: Arc<Mutex<Option<PlaybackState>>> =
+                    self.active_playback_state.clone();
 
                 // This work is going to block. Please run it on a background thread from
                 // your dedicated blocking-thread-pool so it doesn't interfere with my
@@ -128,6 +141,7 @@ impl AudioPlayer {
                         rodio_stream_handle,
                         player_event_sender,
                         active_rodio_sink,
+                        active_playback_state,
                     ) {
                         error!("Playback thread terminated with an error: {}", e);
                     }
@@ -135,10 +149,13 @@ impl AudioPlayer {
             }
             PlayerRemoteCommand::TogglePlayPause => self.toggle_play_pause()?,
             PlayerRemoteCommand::Stop => self.stop_playback(),
+            PlayerRemoteCommand::SeekTo(position) => self.seek_to(position)?,
             PlayerRemoteCommand::VolumeUp(amount) => self.volume_up(amount)?,
             PlayerRemoteCommand::VolumeDown(amount) => self.volume_down(amount)?,
             PlayerRemoteCommand::ToggleMute => self.toggle_mute()?,
-            _ => warn!("Command not yet implemented."),
+            // PlayerRemoteCommand::SkipForward(secs) => self.seek_forward(secs)?,
+            // PlayerRemoteCommand::SkipBackward(secs) => self.seek_backward(secs)?,
+            _ => warn!("Command {:?} not yet implemented.", player_command),
         }
         Ok(())
     }
@@ -151,14 +168,26 @@ impl AudioPlayer {
                 let _ = self.player_event_sender.send(PlayerEvent::Stopped);
             }
         }
+        // Clear the playback state as well
+        *self.active_playback_state.lock().unwrap() = None;
     }
 
     fn toggle_play_pause(&self) -> Result<()> {
-        let sink_lock_attempt: LockResult<MutexGuard<Option<Sink>>> = self.active_rodio_sink.lock();
-        let sink_mutex: MutexGuard<Option<Sink>> =
-            sink_lock_attempt.map_err(|e| anyhow!("Failed to lock sink: {}", e))?;
+        let sink_lock: MutexGuard<Option<Sink>> =
+            self.active_rodio_sink.lock().map_err(|e| anyhow!("Failed to lock sink: {}", e))?;
 
-        if let Some(sink) = sink_mutex.as_ref() {
+        // if let Some(sink) = sink_lock.as_ref() {
+        //     if sink.is_paused() {
+        //         sink.play();
+        //         info!("Playback resumed.");
+        //     }
+        // }
+        //
+        // let sink_lock_attempt: LockResult<MutexGuard<Option<Sink>>> = self.active_rodio_sink.lock();
+        // let sink_mutex: MutexGuard<Option<Sink>> =
+        //     sink_lock_attempt.map_err(|e| anyhow!("Failed to lock sink: {}", e))?;
+
+        if let Some(sink) = sink_lock.as_ref() {
             if sink.is_paused() {
                 sink.play();
                 info!("Playback resumed.");
@@ -171,6 +200,58 @@ impl AudioPlayer {
         } else {
             warn!("Toggle command received but no active sink.");
         }
+        Ok(())
+    }
+
+    fn seek_to(&mut self, position: Duration) -> Result<()> {
+        info!("Seeking to {:?}", position);
+        // 1. Lock the playback state. If it doesn't exist, we can't seek.
+        let mut playback_state_lock: MutexGuard<Option<PlaybackState>> =
+            self.active_playback_state.lock().unwrap();
+        let playback_state: &mut PlaybackState = match &mut *playback_state_lock {
+            Some(playback_state) => playback_state,
+            None => {
+                warn!("Seek command received but no active playback state.");
+                return Ok(());
+            }
+        };
+
+        // 2. Stop the current sink to release the audio device.
+        if let Some(sink) = self.active_rodio_sink.lock().unwrap().take() {
+            sink.stop();
+            info!("Playback stopped.");
+            let _ = self.player_event_sender.send(PlayerEvent::Stopped);
+        }
+
+        // 3. Perform the seek on the Symphonia FormatReader.
+        let seek_result: symphonia::core::errors::Result<SeekedTo> = playback_state.reader.seek(
+            SeekMode::Accurate,
+            SeekTo::Time { time: position.into(), track_id: Some(playback_state.track_id) },
+        );
+
+        if let Err(e) = seek_result {
+            error!("Symphonia seek failed: {:?}", e);
+            // Attempt to recover by just stopping.
+            self.stop_playback();
+            let _ =
+                self.player_event_sender.send(PlayerEvent::Error(format!("Seek failed: {:?}", e)));
+            return Err(anyhow!("Seek failed: {:?}", e));
+        }
+
+        // 4. Reset the decoder state.
+        let _ = playback_state.decoder.reset();
+
+        // 5. Create a new Sink and a new SymphoniaRodioSource.
+        // The source will npw start pulling from the new position in the reader.
+        let new_sink: Sink = Sink::try_new(&self.rodio_hardware_stream_handle)?;
+        let new_source: SymphoniaRodioSource =
+            SymphoniaRodioSource::from_playback_state(playback_state);
+        new_sink.append(new_source);
+        new_sink.play();
+
+        *self.active_rodio_sink.lock().unwrap() = Some(new_sink);
+        info!("Seek successful, Playback resumed from new position.");
+
         Ok(())
     }
 
@@ -241,6 +322,50 @@ impl AudioPlayer {
         }
         Ok(())
     }
+
+    fn seek_forward(&self, secs: u64) -> Result<()> {
+        let sink_lock: MutexGuard<Option<Sink>> = self
+            .active_rodio_sink
+            .lock()
+            .map_err(|e| anyhow!("Failed to lock sink for seek: {}", e))?;
+
+        if let Some(sink) = sink_lock.as_ref() {
+            let current_pos: Duration = sink.get_pos();
+            let seek_duration: Duration = Duration::from_secs(secs);
+            let new_pos: Duration = current_pos + seek_duration;
+            info!("Attempting to seek forward by {}s to {:?}", secs, new_pos);
+
+            // Note: try_seek may fail if the underlying source is not "seekable" by rodio's
+            // standards (which often requires the source to be Clone). If seeking doesn't
+            // work, a more advanced source implementation may be required.
+            if let Err(e) = sink.try_seek(new_pos) {
+                warn!("Failed to seek forward: {:?}", e);
+            }
+        } else {
+            warn!("Seek command received but no active sink.");
+        }
+        Ok(())
+    }
+    fn seek_backward(&self, secs: u64) -> Result<()> {
+        let sink_lock: MutexGuard<Option<Sink>> = self
+            .active_rodio_sink
+            .lock()
+            .map_err(|e| anyhow!("Failed to lock sink for seek: {}", e))?;
+
+        if let Some(sink) = sink_lock.as_ref() {
+            let current_pos: Duration = sink.get_pos();
+            let seek_duration: Duration = Duration::from_secs(secs);
+            let new_pos: Duration = current_pos.saturating_sub(seek_duration);
+            info!("Attempting to seek backward by {}s to {:?}", secs, new_pos);
+
+            if let Err(e) = sink.try_seek(new_pos) {
+                warn!("Failed to seek backward: {:?}", e);
+            }
+        } else {
+            warn!("Seek command received but no active sink.");
+        }
+        Ok(())
+    }
 }
 
 fn play_episode_on_thread(
@@ -248,6 +373,7 @@ fn play_episode_on_thread(
     rodio_hardware_stream_handle: OutputStreamHandle,
     player_event_sender: broadcast::Sender<PlayerEvent>,
     active_rodio_sink: Arc<Mutex<Option<Sink>>>,
+    active_playback_state: Arc<Mutex<Option<PlaybackState>>>,
 ) -> Result<()> {
     let result: Result<()> = (|| {
         info!("[Blocking Task] Executing for '{}'", episode.title());
@@ -279,13 +405,21 @@ fn play_episode_on_thread(
 
         let MetadataOptions { limit_metadata_bytes, limit_visual_bytes }: MetadataOptions =
             Default::default();
+
+        let mut hint: Hint = Hint::new();
+        // Provide a hint to Symphonia about the container format if possible
+        if episode.audio_url().ends_with(".mp3") {
+            hint.with_extension("mp3");
+        }
+
         let probed: ProbeResult = symphonia::default::get_probe().format(
-            &Hint::new(),
+            &hint,
             mss,
-            &FormatOptions::default(),
-            &MetadataOptions { limit_metadata_bytes, limit_visual_bytes },
+            &FormatOptions { enable_gapless: true, ..Default::default() },
+            &MetadataOptions::default(),
         )?;
 
+        // let audio_format_reader: Box<dyn FormatReader> = probed.format;
         let audio_format_reader: Box<dyn FormatReader> = probed.format;
         let track: Track = audio_format_reader
             .tracks()
@@ -296,16 +430,17 @@ fn play_episode_on_thread(
         let decoder: Box<dyn Decoder> = symphonia::default::get_codecs()
             .make(&track.codec_params, &DecoderOptions::default())?;
 
-        // Audio File → FormatReader → Decoder → SymphoniaRodioSource → Sink → Hardware
-        //     ↑            ↑           ↑              ↑                 ↑        ↑
-        //   Raw bytes   Packets    Samples      Rodio format         Playback Speakers
-        let rodio_sink: Sink = Sink::try_new(&rodio_hardware_stream_handle)?;
-        let symphonia_source: SymphoniaRodioSource =
-            SymphoniaRodioSource::new(audio_format_reader, decoder, track.id);
-        rodio_sink.append(symphonia_source);
+        // // Audio File → FormatReader → Decoder → SymphoniaRodioSource → Sink → Hardware
+        // //     ↑            ↑           ↑              ↑                 ↑        ↑
+        // //   Raw bytes   Packets    Samples      Rodio format         Playback Speakers
+        // let rodio_sink: Sink = Sink::try_new(&rodio_hardware_stream_handle)?;
+        // let symphonia_source: SymphoniaRodioSource =
+        //     SymphoniaRodioSource::new(audio_format_reader, decoder, track.id);
+        // rodio_sink.append(symphonia_source);
+        //
+        // *active_rodio_sink.lock().unwrap() = Some(rodio_sink);
 
-        *active_rodio_sink.lock().unwrap() = Some(rodio_sink);
-
+        let track_id: u32 = track.id;
         // Extract duration from the track
         let duration: Duration = track
             .codec_params
@@ -318,6 +453,24 @@ fn play_episode_on_thread(
             })
             .unwrap_or(Duration::ZERO);
 
+        // Create the state needed for playback and seeking
+        let mut state = PlaybackState {
+            reader: audio_format_reader,
+            decoder,
+            track_id,
+            track_duration: duration,
+        };
+
+        let rodio_source = SymphoniaRodioSource::from_playback_state(&mut state);
+        let rodio_sink: Sink = Sink::try_new(&rodio_hardware_stream_handle)?;
+
+        rodio_sink.append(rodio_source);
+        rodio_sink.play();
+
+        *active_rodio_sink.lock().unwrap() = Some(rodio_sink);
+        *active_playback_state.lock().unwrap() = Some(state);
+
+        // Send the initial playback event
         let podcast_title: String = episode.podcast_name().to_string();
         let episode_title: String = episode.title().to_string();
         let _ = player_event_sender.send(PlayerEvent::Playing {
@@ -341,6 +494,9 @@ fn play_episode_on_thread(
                             current_position: elapsed,
                             total_duration: duration,
                         });
+                    } else if sink.empty() {
+                        info!("Sink is empty, progress loop will exit.");
+                        break;
                     }
                 } else {
                     break;
@@ -369,13 +525,19 @@ struct SymphoniaRodioSource {
 }
 
 impl SymphoniaRodioSource {
-    fn new(
-        reader: Box<dyn FormatReader + Send>,
-        decoder: Box<dyn Decoder + Send>,
-        track_id: u32,
-    ) -> Self {
-        let track: &Track =
-            reader.tracks().iter().find(|t| t.id == track_id).expect("Track disappeared");
+    // fn new(
+    //     reader: Box<dyn FormatReader + Send>,
+    //     decoder: Box<dyn Decoder + Send>,
+    //     track_id: u32,
+    fn from_playback_state(state: &mut PlaybackState) -> Self {
+        // let track: &Track =
+        //     reader.tracks().iter().find(|t| t.id == track_id).expect("Track disappeared");
+        let track = state
+            .reader
+            .tracks()
+            .iter()
+            .find(|t| t.id == state.track_id)
+            .expect("Track disappeared");
         let channels: u16 = track.codec_params.channels.map(|c| c.count() as u16).unwrap_or(2);
         let sample_rate: u32 = track.codec_params.sample_rate.unwrap_or(44100);
         Self { reader, decoder, track_id, buffer: None, pos: 0, channels, sample_rate }

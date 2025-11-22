@@ -16,7 +16,8 @@ use tokio::sync::broadcast::{self, Receiver, Sender};
 use tokio::sync::mpsc;
 use tokio::task;
 use tokio::task::JoinHandle;
-
+// Kew: Pretty Music In Your Terminal
+// https://www.youtube.com/watch?v=aXmpG9U5zTQ
 fn setup_logger() -> anyhow::Result<()> {
     let log_file_path: &str = "rustero.log";
     fern::Dispatch::new()

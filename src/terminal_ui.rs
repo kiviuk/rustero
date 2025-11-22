@@ -367,8 +367,7 @@ pub fn ui<B: Backend>(f: &mut Frame, app: &mut App) {
     f.render_widget(show_notes_widget, layout_chunks.show_notes_chunk);
 
     // --- Hint Bar ---
-    let hint_text: &str =
-        "[←/→/Tab] Panel | [↑/↓] Nav | [Enter] Play | [Space] Pause | [-/=] Volume | [M] Mute | [Q] Quit";
+    let hint_text: &str = "[←/→/Tab] Panel | [↑/↓] Nav | [Enter] Play | [Space] Pause | [-/=] Volume | [M] Mute | [Q] Quit";
     let hint_widget: Paragraph = Paragraph::new(hint_text)
         .style(Style::default().fg(Color::DarkGray))
         .alignment(Alignment::Center);

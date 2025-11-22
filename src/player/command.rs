@@ -13,6 +13,8 @@ pub enum PlayerRemoteCommand {
     SkipForward(u64),
     /// Skips backward by a given number of seconds.
     SkipBackward(u64),
+    /// Seeks to a specific position in the track.
+    SeekTo(std::time::Duration),
     /// Adjusts volume up.
     VolumeUp(f32),
     /// Adjusts volume down.

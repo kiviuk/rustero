@@ -240,14 +240,8 @@ impl App {
                 self.should_quit = true;
                 return;
             }
-            KeyCode::Char(' ') => {
+            KeyCode::Char(' ') | KeyCode::Char('p') => {
                 self.toggle_play_pause_action();
-                return;
-            }
-            KeyCode::Enter => {
-                if self.focused_panel == FocusedPanel::Episodes {
-                    self.play_selected_episode_action();
-                }
                 return;
             }
             KeyCode::Char('-') => {
@@ -259,8 +253,23 @@ impl App {
                 return;
             }
             KeyCode::Char('m') => {
-                 self.send_player_command(PlayerRemoteCommand::ToggleMute);
-                 return;
+                self.send_player_command(PlayerRemoteCommand::ToggleMute);
+                return;
+            }
+            KeyCode::Char('a') => {
+                // Seek Backward 10s
+                let new_pos: Duration =
+                    self.current_playback_progress.saturating_sub(Duration::from_secs(10));
+                self.send_player_command(PlayerRemoteCommand::SeekTo(new_pos));
+                return;
+            }
+            KeyCode::Char('s') => {
+                // Seek Forward 10s
+                let new_pos: Duration = self.current_playback_progress + Duration::from_secs(10);
+                if self.total_playback_duration.map_or(true, |d| new_pos < d) {
+                    self.send_player_command(PlayerRemoteCommand::SeekTo(new_pos));
+                }
+                return;
             }
             _ => {}
         }
@@ -269,8 +278,7 @@ impl App {
             FocusedPanel::Podcasts => match key {
                 KeyCode::Down | KeyCode::Char('j') => self.select_next_podcast(),
                 KeyCode::Up | KeyCode::Char('k') => self.select_prev_podcast(),
-                KeyCode::Tab | KeyCode::Right => self.focus_next_panel(),
-                KeyCode::BackTab | KeyCode::Left => self.focus_prev_panel(),
+                KeyCode::Tab | KeyCode::Right | KeyCode::Enter => self.focus_next_panel(),
                 _ => {}
             },
             FocusedPanel::Episodes => match key {
@@ -278,6 +286,7 @@ impl App {
                 KeyCode::Up | KeyCode::Char('k') => self.select_prev_episode(),
                 KeyCode::Tab | KeyCode::Right => self.focus_next_panel(),
                 KeyCode::BackTab | KeyCode::Left => self.focus_prev_panel(),
+                KeyCode::Enter => self.play_selected_episode_action(),
                 _ => {}
             },
             FocusedPanel::ShowNotes => match key {
@@ -285,7 +294,6 @@ impl App {
                 KeyCode::Up | KeyCode::Char('k') => self.show_notes_state.scroll_up(1),
                 KeyCode::PageDown => self.show_notes_state.scroll_down(10),
                 KeyCode::PageUp => self.show_notes_state.scroll_up(10),
-                KeyCode::Tab | KeyCode::Right => self.focus_next_panel(),
                 KeyCode::BackTab | KeyCode::Left => self.focus_prev_panel(),
                 _ => {}
             },
@@ -355,7 +363,7 @@ pub fn start_ui(mut app: App) -> Result<()> {
     let backend: CrosstermBackend<Stdout> = CrosstermBackend::new(stdout);
     let mut terminal: Terminal<CrosstermBackend<Stdout>> = Terminal::new(backend)?;
 
-    // blocks the thread it's running on (with crossterm::event::poll).
+    // Blocks the thread it's running on (with crossterm::event::poll).
     run_app_loop(&mut terminal, &mut app)?;
 
     disable_raw_mode()?;

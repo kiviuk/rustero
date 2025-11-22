@@ -6,6 +6,26 @@
   "website_url": "https://www.softwareengineeringdaily.com",
   "episodes": [
     {
+      "id": "a431ffd4-4e1f-11f0-8daf-7775d6929cf2",
+      "title": "AI at Anaconda with Greg Jennings",
+      "podcast_name": "Software Engineering Daily",
+      "description": "Anaconda is a software company that's well-known for its solutions for managing packages, environments, and security in large-scale data workflows. The company has played a major role in making Python-based data science more accessible, efficient, and scalable. Anaconda has also invested heavily in AI tool development.\n\n\n\nGreg Jennings is the VP of Engineering and AI at Anaconda. He joins the podcast with Kevin Ball to talk about the tooling ecosystem around AI app development, the Anaconda Toolbox, the rapidly evolving role of AI in engineering, and more.\n\n\n\nKevin Ball or KBall, is the vice president of engineering at Mento and an independent coach for engineers and engineering leaders. He co-founded and served as CTO for two companies, founded the San Diego JavaScript meetup, and organizes the AI inaction discussion group through Latent Space.\n\n \n\nPlease click here to see the transcript of this episode.\n\nSponsorship inquiries: sponsor@softwareengineeringdaily.com",
+      "published_date": "2025-07-03T09:00:00Z",
+      "duration": "2987",
+      "audio_url": "https://traffic.megaphone.fm/SED5262493748.mp3?updated=1750457197",
+      "size_in_bytes": 0
+    },
+    {
+      "id": "78e911a2-4e1d-11f0-9669-efc990252b4a",
+      "title": "ByteDance’s Container Networking Stack with Chen Tang",
+      "podcast_name": "Software Engineering Daily",
+      "description": "ByteDance is a global technology company operating a wide range of content platforms around the world, and is best known for creating TikTok. The company operates at a massive scale, which naturally presents challenges in ensuring performance and stability across its data centers. It has over a million servers running containerized applications, and this required the company to find a networking solution that could handle high throughput while maintaining stability.\n\n\n\neBPF is a technology for dynamically and safely reprogramming the Linux kernel. ByteDance leveraged eBPF to successfully implement a decentralized networking solution that improved efficiency, scalability, and performance.\n\n\n\nChen Tang is an engineer at ByteDance, where he worked on redesigning the company's container networking stack using eBPF. In this episode, Chen joins the show with Kevin Ball to talk about eBPF, the problems it solves, and how it was used at ByteDance.\n\n\n\nKevin Ball or KBall, is the vice president of engineering at Mento and an independent coach for engineers and engineering leaders. He co-founded and served as CTO for two companies, founded the San Diego JavaScript meetup, and organizes the AI inaction discussion group through Latent Space.\n\n \n\nPlease click here to see the transcript of this episode.\n\nSponsorship inquiries: sponsor@softwareengineeringdaily.com",
+      "published_date": "2025-07-01T09:00:00Z",
+      "duration": "2877",
+      "audio_url": "https://traffic.megaphone.fm/SED9612443626.mp3?updated=1750455195",
+      "size_in_bytes": 0
+    },
+    {
       "id": "d85dd07c-e2a8-11ef-ba1a-5fc20e9216de",
       "title": "WayForward Games with Tomm Hulett and Voldi Way",
       "podcast_name": "Software Engineering Daily",
@@ -20986,5 +21006,5 @@
       "size_in_bytes": 0
     }
   ],
-  "last_updated": "2025-06-29T00:14:36.724459Z"
+  "last_updated": "2025-07-06T20:17:05.671127Z"
 }

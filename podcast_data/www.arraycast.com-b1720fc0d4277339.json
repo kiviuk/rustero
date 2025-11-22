@@ -6,13 +6,23 @@
   "website_url": "https://www.arraycast.com/episodes/",
   "episodes": [
     {
+      "id": "607a5a4ecbc7ae6b49698947:607a6a9b2745ff0f53e2be56:686607984a0a9d16e3662bad",
+      "title": "Decker Fantasy Camp",
+      "podcast_name": "The Array Cast",
+      "description": "<p data-rte-preserve-empty=\"true\" style=\"white-space:pre-wrap;\">Array Cast - July 4, 2025 <br>Show Notes</p><p data-rte-preserve-empty=\"true\" style=\"white-space:pre-wrap;\">This is the address of the Show notes on the ArrayCast website:</p><p data-rte-preserve-empty=\"true\" style=\"white-space:pre-wrap;\"><a target=\"_blank\" href=\"https://ww.arraycast.com/episode109-show-notes\">https://www.arraycast.com/episode109-show-notes</a></p>",
+      "published_date": "2025-07-05T04:55:00Z",
+      "duration": "01:21:47",
+      "audio_url": "https://static1.squarespace.com/static/607a5a4ecbc7ae6b49698947/t/6866093a281f1b7ac466969b/1751517756613/Episode+109+final+draft.mp3",
+      "size_in_bytes": 98158152
+    },
+    {
       "id": "607a5a4ecbc7ae6b49698947:607a6a9b2745ff0f53e2be56:6854c5ca574f49017fe69683",
       "title": "Learning q with Alex Unterrainer",
       "podcast_name": "The Array Cast",
       "description": "<p data-rte-preserve-empty=\"true\" style=\"white-space:pre-wrap;\">Array Cast - June 20, 2025 <br>Show Notes</p><p data-rte-preserve-empty=\"true\" style=\"white-space:pre-wrap;\">This is the address of the Show notes on the ArrayCast website:</p><p data-rte-preserve-empty=\"true\" style=\"white-space:pre-wrap;\"><a href=\"https://www.arraycast.com/episode108-show-notes\">https://www.arraycast.com/episode108-show-notes</a></p>",
       "published_date": "2025-06-21T04:02:00Z",
       "duration": "01:02:50",
-      "audio_url": "https://static1.squarespace.com/static/607a5a4ecbc7ae6b49698947/t/6854e18fb989b8229046bb22/1750393379040/Episode+108+final+draft.mp3",
+      "audio_url": "https://static1.squarespace.com/static/607a5a4ecbc7ae6b49698947/t/6854e18fb989b8229046bb22/1751517080376/Episode+108+final+draft.mp3",
       "size_in_bytes": 75490658
     },
     {
@@ -994,17 +1004,7 @@
       "duration": "01:22:22",
       "audio_url": "https://static1.squarespace.com/static/607a5a4ecbc7ae6b49698947/t/61451894200a41594dad0751/1633057889836/ArrayCast+Episode+10.mp3",
       "size_in_bytes": 98845173
-    },
-    {
-      "id": "607a5a4ecbc7ae6b49698947:607a6a9b2745ff0f53e2be56:61313ac9f98cec1c4814f2e1",
-      "title": "Tacit Programming",
-      "podcast_name": "The Array Cast",
-      "description": "<p class=\"\" style=\"white-space:pre-wrap;\"><strong>Array Cast - September 4, 2021 Show Notes</strong></p><p class=\"\" style=\"white-space:pre-wrap;\">0:00:16 <a href=\"https://www.paloaltoonline.com/obituaries/memorials/lawrence-larry-moser-breed?o=6845\" target=\"_blank\">Larry Breed Obituary</a><br>             <a href=\"https://zoom.us/j/670796753?mc_cid=5edda9c5b1&amp;mc_eid=ca3625e5aa&amp;pwd=cTBiY0toMUl1ZEZaK0ZETjU0YitJZz09\" target=\"_blank\">Larry Breed Memorial on Zoom - Sept. 12, 1:00pm PDT</a>          <br>0:02:05 <a href=\"https://www.twitch.tv/tangentstorm/\" target=\"_blank\">The Ridiculously Early J Morning Show (twitch)</a><br>              <a href=\"https://www.youtube.com/playlist?list=PLMVwLeG3bKmmctpRZt7u7hL8d82Jr1Av4\" target=\"_blank\">The Ridiculously Early J Morning Show (youtube)</a><br>0:03:38 <a href=\"https://apl.wiki/Tacit_programming\" target=\"_blank\">Tacit Programming</a><br>0:09:06 <a href=\"https://vector.org.uk/sixteen-apl-amuse-bouches/\" target=\"_blank\">16 APL Amuse Bouches (Roger Hui)</a><br>0:10:03  <a href=\"https://www.jsoftware.com/papers/APLDictionary1.htm#subset\" target=\"_blank\">Original ‘Swap’ Character</a><br>0:19:49  <a href=\"https://www.youtube.com/watch?v=vDe-4o8Uwl8\" target=\"_blank\">The Power of Composition (Scott Wlaschin)</a><br>0:20:55 <a href=\"https://www.youtube.com/watch?v=Jc4C0Sctj-M\" target=\"_blank\">Leetcode 1678 in APL (Rodrigo Girão Serrão)</a><br>0:23:26 <a href=\"https://www.jsoftware.com/help/jforc/parsing_and_execution_i.htm#_Toc191734584\" target=\"_blank\">J parser (J for C Programmers)</a><br>0:31:00 <a href=\"https://aplwiki.com/wiki/Reduce\" target=\"_blank\">+/</a><br>0:35:07 <a href=\"https://www.youtube.com/watch?v=UVUjnzpQKUo\" target=\"_blank\">One Problem - 16 Programming Languages</a><br>0:38:09 <a href=\"https://code.jsoftware.com/wiki/Vocabulary/fork\" target=\"_blank\">Fork</a><a href=\"https://news.ycombinator.com/item?id=13798918\" target=\"_blank\"><br></a>0:38:39 <a href=\"https://code.jsoftware.com/wiki/Vocabulary/squarelfco\" target=\"_blank\">Cap</a><br>0:39:25 <a href=\"https://code.jsoftware.com/wiki/Vocabulary/atco\" target=\"_blank\">At</a> <a href=\"https://code.jsoftware.com/wiki/Vocabulary/at\" target=\"_blank\">Atop</a><br>0:47:50 <a href=\"https://code.jsoftware.com/wiki/Vocabulary/hook\" target=\"_blank\">Hook</a><br>0:52:15 <a href=\"https://www.jsoftware.com/papers/fork.htm\" target=\"_blank\">Phrasal Forms (Iverson and McDonnell)</a><br>0:54:50 <a href=\"https://tryapl.org?clear&amp;q=Pal%20%E2%86%90%20%E2%8C%B7%E2%89%A1%E2%8C%BD%E2%8C%BD%E2%89%A1%E2%8C%B7%20%E2%8B%84%20Pal%20%27racecar%27%20%E2%8B%84%20Pal%20%27teapot%27&amp;run\" target=\"_blank\">Palindromic Palindrome Checker in APL</a><br>1:02:50 <a href=\"https://github.com/fantasyland/fantasy-birds\" target=\"_blank\">Fantasy Birds</a><br>             <a href=\"https://www.5jt.com/the-rest-is-silence\" target=\"_blank\">The Rest is Silence - Invincible Summer&nbsp;<br>(Stephen Taylor’s Essay on Tacit Programming)</a></p>",
-      "published_date": "2021-09-04T07:00:00Z",
-      "duration": "01:17:38",
-      "audio_url": "https://static1.squarespace.com/static/607a5a4ecbc7ae6b49698947/t/61313c3f343bf5532a103989/1631917776016/ArrayCast+Episode+9.mp3",
-      "size_in_bytes": 93170332
     }
   ],
-  "last_updated": "2025-06-29T00:14:32.294633Z"
+  "last_updated": "2025-07-06T20:17:02.072872Z"
 }

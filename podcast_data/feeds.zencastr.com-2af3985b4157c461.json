@@ -6,6 +6,16 @@
   "website_url": "http://www.developervoices.com",
   "episodes": [
     {
+      "id": "0f36bc47-55ab-4845-b22c-548c657962a1",
+      "title": "The $500 Billion Integration Problem, And One Possible Solution (with Marty Pitt)",
+      "podcast_name": "Developer Voices",
+      "description": "<p>Ever wondered why data integration is still such a nightmare in 2025? Marty Pitt has built something that might finally solve it.</p><p>TaxiQL isn't just another query language - it's a semantic layer that lets you query across any system without caring about field names, API differences, or where the data actually lives. Instead of writing endless mapping code between your microservices, databases, and APIs, you describe what your data *means* and let TaxiQL figure out how to get it.</p><p>In this conversation, Marty walks through the “All Powerful Spreadsheet” moment that sparked TaxiQL, how semantic types work in practice, and why this approach might finally decouple producers from consumers in large organizations. We dive deep into query execution, data lineage, streaming integration, and the technical challenges of building a system that can connect anything to anything.</p><p>If you've ever spent months mapping fields between systems or maintaining brittle integration code, this one's for you.</p><p>–</p><p>Support Developer Voices on Patreon: https://patreon.com/DeveloperVoices</p><p>Support Developer Voices on YouTube: https://www.youtube.com/@developervoices/join</p><p>–</p><p>TaxiLang Homepage: https://taxilang.org/</p><p>TaxiLang Playground: https://playground.taxilang.org/examples/message-queue-and-database</p><p>Taxi Lang GitHub repository: https://github.com/taxilang/taxilang</p><p>OpenAPI Specification (formerly Swagger): https://swagger.io/specification/</p><p>YOW! Conference - Australian software conference series: https://yowconference.com/</p><p>Spring Framework Kotlin support: https://spring.io/guides/tutorials/spring-boot-kotlin/</p><p>Ubiquitous Language (DDD Concept): https://martinfowler.com/bliki/UbiquitousLanguage.html</p><p>Kris on Bluesky: https://bsky.app/profile/krisajenkins.bsky.social</p><p>Kris on Mastodon: http://mastodon.social/@krisajenkins</p><p>Kris on LinkedIn: https://www.linkedin.com/in/krisjenkins/</p><p>–</p><p>0:00 Intro</p>",
+      "published_date": "2025-07-04T13:30:03Z",
+      "duration": "5493",
+      "audio_url": "https://redirect.zencastr.com/r/episode/6867d75b3645080e3b2cd971/size/131835604/audio-files/619e48a9649c44004c5a44e8/466af98f-e3c2-4a40-9c77-0b7d41856398.mp3",
+      "size_in_bytes": 131835604
+    },
+    {
       "id": "5c2caf6f-4eb7-4533-b65d-2a2d196869e8",
       "title": "Making Software Crash Before It Breaks (with Isaac Van Doren)",
       "podcast_name": "Developer Voices",
@@ -916,5 +926,5 @@
       "size_in_bytes": 76798701
     }
   ],
-  "last_updated": "2025-06-29T00:14:09.815711Z"
+  "last_updated": "2025-07-06T20:16:49.617695Z"
 }
